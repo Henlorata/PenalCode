@@ -1,0 +1,1663 @@
+[
+  {
+    "kategoria_nev": "Közlekedési Szabálysértés",
+    "tetelek": [
+      {
+        "paragrafus": "1 §",
+        "megnevezes": "Forgalom Feltartása",
+        "min_birsag": 50000,
+        "max_birsag": 100000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "FF",
+        "megjegyzes": "Jelentősen a megengedett sebesség alatt halad, áll az úton."
+      },
+      {
+        "paragrafus": "2 §",
+        "megnevezes": "Gondatlan Vezetés",
+        "min_birsag": 50000,
+        "max_birsag": 100000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "GV",
+        "megjegyzes": "Indexelés hiánya, átlóg a másik sávba, stb. Súlyos esetben, balesetet okozva, a vezetéstől ellehet tiltani a személyt. (Max 30 nap)"
+      },
+      {
+        "paragrafus": "3 §",
+        "megnevezes": "Közúti Veszélyeztetés",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "KV",
+        "megjegyzes": "Önmagát vagy másokat veszélyeztető szabálytalan manőver. Súlyos esetben, balesetet okozva, a vezetéstől ellehet tiltani a személyt. (Max 30 nap)"
+      },
+      {
+        "paragrafus": "4 §",
+        "megnevezes": "Tilosban Parkolás",
+        "min_birsag": 50000,
+        "max_birsag": 100000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "TP",
+        "megjegyzes": "Ide tartozik a járdán parkolás is. Közterületre vonatkozik."
+      },
+      {
+        "paragrafus": "5 §",
+        "megnevezes": "Tilos Jelzésen Való Áthaladás",
+        "min_birsag": 50000,
+        "max_birsag": 100000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "TJVÁ",
+        "megjegyzes": "Sárga jelzésen még áthaladhat, a piroson viszont már nem."
+      },
+      {
+        "paragrafus": "6 §",
+        "megnevezes": "Bukósisak Hiánya",
+        "min_birsag": 50000,
+        "max_birsag": 100000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "BH",
+        "megjegyzes": "Motorokra vonatkozik közutakon. Magánterületen (kertben) nem."
+      },
+      {
+        "paragrafus": "7 §",
+        "megnevezes": "Elsőbbségadás elmulasztása",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "EE",
+        "megjegyzes": "Megkülönböztető jelzésű járművekre vonatkozik."
+      },
+      {
+        "paragrafus": "8 §",
+        "megnevezes": "Kanyarodási szabályok megszegése",
+        "min_birsag": 50000,
+        "max_birsag": 100000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "KSZM",
+        "megjegyzes": "Behajtani, kanyarodni tilos vagy egyirányú helyre kanyarodik."
+      },
+      {
+        "paragrafus": "9 §",
+        "megnevezes": "Kanyarodási szándék jelzésének elmulasztása",
+        "min_birsag": 50000,
+        "max_birsag": 100000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "KSZJE",
+        "megjegyzes": "Index használatát elmulasztja kanyarodás előtt."
+      },
+      {
+        "paragrafus": "10 §",
+        "megnevezes": "Közúti Baleset Okozása",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Súlyos esetben a vezetéstől ellehet tiltani a személyt. (Max 30 nap)",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "-Cserbenhagyásos gázolás",
+            "min_birsag": 150000,
+            "max_birsag": 300000,
+            "min_fegyhaz": 15,
+            "max_fegyhaz": 30,
+            "rovidites": "KBO/I.",
+            "megjegyzes": "Elüt valakit, de nem áll meg segíteni vagy mentőt hívni."
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "-Súlyos személyi sérülés esetén",
+            "min_birsag": 75000,
+            "max_birsag": 150000,
+            "min_fegyhaz": 15,
+            "max_fegyhaz": 30,
+            "rovidites": "KBO/II.",
+            "megjegyzes": "Animba esett játékosnál számítható csak be, nem kitaláció alapján."
+          },
+          {
+            "paragrafus": "(3)",
+            "megnevezes": "-Halálesetkor",
+            "min_birsag": 250000,
+            "max_birsag": 500000,
+            "min_fegyhaz": 30,
+            "max_fegyhaz": 45,
+            "rovidites": "KBO/III.",
+            "megjegyzes": "Script szerint halott, az nem számít bele ha sikerül újraéleszteni."
+          }
+        ]
+      },
+      {
+        "paragrafus": "11 §",
+        "megnevezes": "Kötelező Felszerelés Hiánya",
+        "min_birsag": 50000,
+        "max_birsag": 100000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "KFH",
+        "megjegyzes": "Ha a személynél van az is elfogadható. Ilyenkor szólj neki hogy rakja be."
+      },
+      {
+        "paragrafus": "12 §",
+        "megnevezes": "Fényszóró Használtának Mulasztása",
+        "min_birsag": 50000,
+        "max_birsag": 100000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "FHM",
+        "megjegyzes": "Nappal is kötelező a fényszóró, nem csak éjszaka."
+      },
+      {
+        "paragrafus": "13 §",
+        "megnevezes": "Biztonsági öv Használatának Mulasztása",
+        "min_birsag": 50000,
+        "max_birsag": 100000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "BHM",
+        "megjegyzes": "Biztonsági öv járó motor mellett kötelező, még egyhelyben is!"
+      },
+      {
+        "paragrafus": "14 §",
+        "megnevezes": "Mobiltelefon Használata Vezetéskor",
+        "min_birsag": 50000,
+        "max_birsag": 100000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "MHV",
+        "megjegyzes": "Akkor használd ezt, ha láttad is IC hogy telefonál. Szemből pl. Hátulról nem látod."
+      },
+      {
+        "paragrafus": "15 §",
+        "megnevezes": "Engedély Nélküli Vezetés",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Ez egy főkategória, aminek az alkategóriáit bünteted.",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "- Nem rendelkezik jogosítvánnyal",
+            "min_birsag": 50000,
+            "max_birsag": 100000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "ENV/I.",
+            "megjegyzes": "A lejárt jogosítvány egyenlő azzal hogy nincsen."
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "- Nem megfelelő kategóriás a jogosítvány",
+            "min_birsag": 50000,
+            "max_birsag": 100000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "ENV/II.",
+            "megjegyzes": "Van jogosítványa, de nem arra a kategóriára szól. PL : B jogsi = Autó de motort vezet."
+          }
+        ]
+      },
+      {
+        "paragrafus": "16 §",
+        "megnevezes": "Hatósági Engedély Hiánya",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Ez egy főkategória, aminek az alkategóriáit bünteted.",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "- Nem rendelkezik forgalmi engedélyel",
+            "min_birsag": 50000,
+            "max_birsag": 100000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "HEH",
+            "megjegyzes": "A lejárt forgalmi engedély egyenlő azzal hogy nincsen."
+          }
+        ]
+      },
+      {
+        "paragrafus": "17 §",
+        "megnevezes": "Megkülönböztető Jelzés Jogtalan Használata",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Ez egy főkategória, aminek az alkategóriáit bünteted.",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "- A megkülönböztető jelzés illegális beszerelése",
+            "min_birsag": 150000,
+            "max_birsag": 300000,
+            "min_fegyhaz": 15,
+            "max_fegyhaz": 30,
+            "rovidites": "MJJH/I.",
+            "megjegyzes": "A megkülönböztető jelzést csak a hivatalosan meghatározott szervek használhatják."
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "- Forgalomban lévő járművön való használata",
+            "min_birsag": 150000,
+            "max_birsag": 300000,
+            "min_fegyhaz": 15,
+            "max_fegyhaz": 30,
+            "rovidites": "MJJH/II.",
+            "megjegyzes": "A megkülönböztető jelzést csak a hivatalosan meghatározott szervek használhatják."
+          }
+        ]
+      },
+      {
+        "paragrafus": "18 §",
+        "megnevezes": "Járművezetés Ittas Állapotban",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "JIÁ",
+        "megjegyzes": "Tudatmódosító szer használata vezetés előtt / közben."
+      },
+      {
+        "paragrafus": "19 §",
+        "megnevezes": "Járművezetés Eltiltás Hatálya Alatt",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "JEHA",
+        "megjegyzes": "Maximum 30 napra lehet eltiltani."
+      },
+      {
+        "paragrafus": "20 §",
+        "megnevezes": "Helytelen Járműabroncs Használata",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "HJH",
+        "megjegyzes": "Téli abroncsot November 1 és Április 30 között kell használni. A négyévszakos mindig elfogadott."
+      },
+      {
+        "paragrafus": "21 §",
+        "megnevezes": "Közlekedési Korlátozás Megszegése",
+        "min_birsag": 900000,
+        "max_birsag": 1800000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "KKM",
+        "megjegyzes": ""
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Megengedett Sebesség Túllépése",
+    "tetelek": [
+      {
+        "paragrafus": "22 §",
+        "megnevezes": "Gyorshajtás Lakott Területen (50km/h)",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Ez egy főkategória, aminek az alkategóriáit bünteted.",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "25% (65km/h)",
+            "min_birsag": 70000,
+            "max_birsag": 140000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYLT/I.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "100% (100km/h)",
+            "min_birsag": 80000,
+            "max_birsag": 160000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYLT/II.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(3)",
+            "megnevezes": "200% (150km/h)",
+            "min_birsag": 90000,
+            "max_birsag": 180000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYLT/III.",
+            "megjegyzes": "Ilyen szintű átlépésnél a vezetéstől ellehet tiltani a személyt. (Max 30 nap)"
+          },
+          {
+            "paragrafus": "(4)",
+            "megnevezes": "300% (200km/h)",
+            "min_birsag": 100000,
+            "max_birsag": 200000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYLT/IV.",
+            "megjegyzes": "Ilyen szintű átlépésnél a jogosítvány és forgalmi engedély bevonható."
+          }
+        ]
+      },
+      {
+        "paragrafus": "23 §",
+        "megnevezes": "Gyorshajtás Országúton (90km/h)",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Ez egy főkategória, aminek az alkategóriáit bünteted.",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "25% (110km/h)",
+            "min_birsag": 70000,
+            "max_birsag": 140000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYO/I.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "50% (135km/h)",
+            "min_birsag": 80000,
+            "max_birsag": 160000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYO/II.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(3)",
+            "megnevezes": "100% (180km/h)",
+            "min_birsag": 90000,
+            "max_birsag": 180000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYO/III.",
+            "megjegyzes": "Ilyen szintű átlépésnél a vezetéstől ellehet tiltani a személyt. (Max 30 nap)"
+          },
+          {
+            "paragrafus": "(4)",
+            "megnevezes": "200% (270km/h)",
+            "min_birsag": 100000,
+            "max_birsag": 200000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYO/IV.",
+            "megjegyzes": "Ilyen szintű átlépésnél a jogosítvány és forgalmi engedély bevonható."
+          }
+        ]
+      },
+      {
+        "paragrafus": "24 §",
+        "megnevezes": "Gyorshajtás Autópályán (120km/h)",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Ez egy főkategória, aminek az alkategóriáit bünteted.",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "25% (130km/h)",
+            "min_birsag": 70000,
+            "max_birsag": 140000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYA/I.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "50% (180km/h)",
+            "min_birsag": 80000,
+            "max_birsag": 160000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYA/II.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(3)",
+            "megnevezes": "100% (240km/h)",
+            "min_birsag": 90000,
+            "max_birsag": 180000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYA/III.",
+            "megjegyzes": "Ilyen szintű átlépésnél a vezetéstől ellehet tiltani a személyt. (Max 30 nap)"
+          },
+          {
+            "paragrafus": "(4)",
+            "megnevezes": "150% (300km/h)",
+            "min_birsag": 100000,
+            "max_birsag": 200000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "GYA/IV.",
+            "megjegyzes": "Ilyen szintű átlápésnél a jogosítvány és forgalmi engedély bevonható."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Egyéb Közlekedésre Vonatkozó Szabálysértések",
+    "tetelek": [
+      {
+        "paragrafus": "25 §",
+        "megnevezes": "Illegális Autóalkatrész",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Ez egy főkategória, aminek az alkategóriáit bünteted.",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "-[Illegális Alkatrész] Neoncső",
+            "min_birsag": 100000,
+            "max_birsag": 200000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "IAA/I.",
+            "megjegyzes": "Semmilyen színben nem engedélyezett."
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "-[Illegális Alkatrész] Színes / tompított fényszóró",
+            "min_birsag": 100000,
+            "max_birsag": 200000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "IAA/II.",
+            "megjegyzes": "Kivétel : Gyári Fehér, Xenon Kék, Kadmium Sárga."
+          }
+        ]
+      },
+      {
+        "paragrafus": "26 §",
+        "megnevezes": "Rongált Járművel Való Közlekedés",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Ez egy főkategória, aminek az alkategóriáit bünteted.",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "-Első szélvédő sérülése",
+            "min_birsag": 50000,
+            "max_birsag": 100000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "RJVK/I.",
+            "megjegyzes": "Zavar a kilátásban, és balesetveszélyes."
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "-Hátsó szélvédő sérülése",
+            "min_birsag": 50000,
+            "max_birsag": 100000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "RJVK/II.",
+            "megjegyzes": "Zavar a kilátásban, és balesetveszélyes."
+          },
+          {
+            "paragrafus": "(3)",
+            "megnevezes": "-Karoszszériaelemek sérülése",
+            "min_birsag": 50000,
+            "max_birsag": 100000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "RJVK/III.",
+            "megjegyzes": "Balesetveszélyes, leszakadhat útközben a járműről."
+          },
+          {
+            "paragrafus": "(4)",
+            "megnevezes": "-Működésképtelen izzó (darab)",
+            "min_birsag": 50000,
+            "max_birsag": 100000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "RJVK/IV.",
+            "megjegyzes": "Látási viszonyokat nem elégíti ki, balesetveszélyes."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Enyhébb Szabálysértések",
+    "tetelek": [
+      {
+        "paragrafus": "27 §",
+        "megnevezes": "Személyi Igazolvány Hiánya",
+        "min_birsag": 100000,
+        "max_birsag": 200000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "SZIH",
+        "megjegyzes": "A lejárt iratot hiányként vesszük számításba."
+      },
+      {
+        "paragrafus": "28 §",
+        "megnevezes": "Útlevél Hiánya",
+        "min_birsag": 100000,
+        "max_birsag": 200000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "ÚH",
+        "megjegyzes": "Los Santos Területén akkor lehet büntetni, ha San Fierroból érkezik a személy. San Fierroba fordítva."
+      },
+      {
+        "paragrafus": "29 §",
+        "megnevezes": "Közvagyon Megrongálása",
+        "min_birsag": 100000,
+        "max_birsag": 200000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "KM",
+        "megjegyzes": "Bármire vonatkozik ami állami tulajdonban van."
+      },
+      {
+        "paragrafus": "30 §",
+        "megnevezes": "Rendőrrel Szembeni Tiszteletlenség",
+        "min_birsag": 100000,
+        "max_birsag": 200000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "RSZT",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "31 §",
+        "megnevezes": "Láthatósági Mellény Viselésének Elmulasztása",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "LMVE",
+        "megjegyzes": "Vadászat közben a kötelező láthatósági mellény viselési kötelességének nem tesz eleget."
+      },
+      {
+        "paragrafus": "32 §",
+        "megnevezes": "Lövedékálló Mellény Viselése Közterületen",
+        "min_birsag": 300000,
+        "max_birsag": 600000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "LMVK",
+        "megjegyzes": "Lövedékálló Mellényt csak MAGÁNTERÜLETEN, LŐTÉREN, VADÁSZTERÜLETEN lehet hordani. Kivétel: Rendvédelem"
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Vétségek",
+    "tetelek": [
+      {
+        "paragrafus": "33 §",
+        "megnevezes": "Segítségnyújtás elmulasztása",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "SNYE",
+        "megjegyzes": "A mulasztás vétségnek minősül akkor is, ha nem ő okozta a balesetet."
+      },
+      {
+        "paragrafus": "34 §",
+        "megnevezes": "Közerkölcs megsértése",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "KM",
+        "megjegyzes": "Közterületen lévő szexuális aktus létesítése bűncselekménynek minősül."
+      },
+      {
+        "paragrafus": "35 §",
+        "megnevezes": "Rongálás",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "R",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "36 §",
+        "megnevezes": "Lopás",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "L",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "37 §",
+        "megnevezes": "Benzinlopás",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "BL",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "38 §",
+        "megnevezes": "Autólopás",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "AL",
+        "megjegyzes": ""
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Igazságszolgáltatás Elleni Bűncselekmények",
+    "tetelek": [
+      {
+        "paragrafus": "39 §",
+        "megnevezes": "Hamis Vád",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HV",
+        "megjegyzes": "Eljárás vagy feljelentés során hamis vádakat állít."
+      },
+      {
+        "paragrafus": "40 §",
+        "megnevezes": "Hatóság Félrevezetése",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HF",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "41 §",
+        "megnevezes": "Hamis Tanúzás",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HT",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "42 §",
+        "megnevezes": "Hamis Tanúzásra Felhívás",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HTF",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "43 §",
+        "megnevezes": "Tanúvallomás Jogosulatlan Megtagadása",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "TJM",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "44 §",
+        "megnevezes": "Kényszerítés Hatósági Eljárásban",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "KHE",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "45 §",
+        "megnevezes": "Hatósági Eljárás Megzavarása",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HEM",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "46 §",
+        "megnevezes": "Igazságszolgáltatással Összefüggő Titoksértés",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "IÖT",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "47 §",
+        "megnevezes": "Mentőkörülmény Elhallgatása",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "ME",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "48 §",
+        "megnevezes": "Bűnpártolás",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "BP",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "49 §",
+        "megnevezes": "Fogolyszökés",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "FSZ",
+        "megjegyzes": "Határok lezárása szükséges a hajtóvadászat végéig."
+      },
+      {
+        "paragrafus": "50 §",
+        "megnevezes": "Fogolyszöktetés",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "FSZT",
+        "megjegyzes": "Határok lezárása szükséges a hajtóvadászat végéig."
+      },
+      {
+        "paragrafus": "51 §",
+        "megnevezes": "Fogolyzendülés",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "FZ",
+        "megjegyzes": "A teljes állomány kirendelése amennyiben szükséges."
+      },
+      {
+        "paragrafus": "52 §",
+        "megnevezes": "Ügyvédi Visszaélés",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "ÜV",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "53 §",
+        "megnevezes": "Hivatalos Személy Eljárása Során Elkövetett Bűnpártolás",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HSZESEB",
+        "megjegyzes": "Hivatali személy követheti el, kihág a szabályok alól, és a felmentés érdekében túllépi hatáskörét."
+      },
+      {
+        "paragrafus": "54 §",
+        "megnevezes": "Bírósági Végrehajtás Akadályoztatása",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "BVA",
+        "megjegyzes": "Bármely tevékenység amely korlátozza a határozat végrehajtását."
+      },
+      {
+        "paragrafus": "55 §",
+        "megnevezes": "Hivatali Területre Való Behatolás",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HTVB",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "56 §",
+        "megnevezes": "Nyomozás Akadályozása",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "NYA",
+        "megjegyzes": "Bármely tevékenység amely akadályozza a nyomozás menetelét."
+      },
+      {
+        "paragrafus": "57 §",
+        "megnevezes": "Célravezető Bizonyíték Eltitkolása",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "CBE",
+        "megjegyzes": "Olyan bizonyítékra vonatkozik amely a letartóztatás, vagy felmentés menetét megváltoztatná."
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Hivatalos Személy Elleni Bűncselekmények",
+    "tetelek": [
+      {
+        "paragrafus": "58 §",
+        "megnevezes": "Hivatali Személy Elleni Erőszak",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HSZEE",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "59 §",
+        "megnevezes": "Közfeladatot Ellátó Személy Elleni Erőszak",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "KESZEE",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "60 §",
+        "megnevezes": "Nemzetközileg Védett Személy Elleni Erőszak",
+        "min_birsag": 180000,
+        "max_birsag": 360000,
+        "min_fegyhaz": 60,
+        "max_fegyhaz": 90,
+        "rovidites": "NVSZEE",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "61 §",
+        "megnevezes": "Hivatali Személy Megvesztegetése",
+        "min_birsag": 60000,
+        "max_birsag": 120000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HSZM",
+        "megjegyzes": ""
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Gyermekek Érdekét Sértő és Család Elleni Bűncselekmények",
+    "tetelek": [
+      {
+        "paragrafus": "62 §",
+        "megnevezes": "Kiskorú Veszélyeztetése",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "KV",
+        "megjegyzes": "Azon tett ami a kiskorú testi, értelmi, erkölcsi vagy érzelmi fejlődését veszélyezteti,"
+      },
+      {
+        "paragrafus": "63 §",
+        "megnevezes": "Kapcsolati Erőszak",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "KE",
+        "megjegyzes": ""
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Nemi Élet Szabadsága és Nemi Erkölcs Elleni Bűncselekmények",
+    "tetelek": [
+      {
+        "paragrafus": "64 §",
+        "megnevezes": "Szexuális Kényszerítés",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "SZK",
+        "megjegyzes": "Aki mást szexuális cselekményre vagy annak eltűrésére kényszerít."
+      },
+      {
+        "paragrafus": "65 §",
+        "megnevezes": "Szexuális Erőszak",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "SZE",
+        "megjegyzes": "Szexuális kényszerítést erőszakkal,az élet vagy a testi épség elleni fenyegetéssel követi el."
+      },
+      {
+        "paragrafus": "66 §",
+        "megnevezes": "Szexuális Visszaélés",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "SZV",
+        "megjegyzes": "18. életévét betöltött személy 14. életévét NEM betöltöttel létesít szexuális kapcsolatot."
+      },
+      {
+        "paragrafus": "67 §",
+        "megnevezes": "Prostitúció Elősegítése",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "PE",
+        "megjegyzes": "Rávétel, helybiztosítás, 18. életévét nem betöltött személyt biztosít, bordélyházat működtet."
+      },
+      {
+        "paragrafus": "68 §",
+        "megnevezes": "Gyermekprostitúció Kihasználása",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "GYK",
+        "megjegyzes": "18. életévét be nem töltött személy prostitúciójából haszonszerzésre törekszik."
+      },
+      {
+        "paragrafus": "69 §",
+        "megnevezes": "Szeméremsértés",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "SZS",
+        "megjegyzes": "Magát nemi vágyának felkeltése vagy kielégítése céljából szeméremsértően mutogatja."
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Közbizalom Elleni Bűncselekmények",
+    "tetelek": [
+      {
+        "paragrafus": "70 §",
+        "megnevezes": "Okirathamisítás",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "OH",
+        "megjegyzes": "Aki a hamis iratot elkészíti, használja, eladja vagy közjegyzésbe veszi."
+      },
+      {
+        "paragrafus": "71 §",
+        "megnevezes": "Szolgálati Kellékkel Való Visszaélés",
+        "min_birsag": 300000,
+        "max_birsag": 600000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "SZKVV",
+        "megjegyzes": "Aki kellékeit nem szolgálatához, magáncélra vagy hatáskörét túllépve használja."
+      },
+      {
+        "paragrafus": "72 §",
+        "megnevezes": "Hivatali Visszaélés",
+        "min_birsag": 300000,
+        "max_birsag": 600000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HV",
+        "megjegyzes": "Aki arra használja hogy jogtalan hátrányt okozzon vagy jogtalan előnyt szerezzen."
+      },
+      {
+        "paragrafus": "73 §",
+        "megnevezes": "Korrupció",
+        "min_birsag": 450000,
+        "max_birsag": 900000,
+        "min_fegyhaz": 60,
+        "max_fegyhaz": 90,
+        "rovidites": "K",
+        "megjegyzes": "Pénzért vagy más juttatásértt cserébe jogosulatlan előnyhöz juttat másokat."
+      },
+      {
+        "paragrafus": "74 §",
+        "megnevezes": "Nyomozás Szándékos Félrevezetése",
+        "min_birsag": 450000,
+        "max_birsag": 900000,
+        "min_fegyhaz": 60,
+        "max_fegyhaz": 90,
+        "rovidites": "NYSZF",
+        "megjegyzes": "Amennyiben a nyomozást direkt olyan információkkal bővíti melyek hátráltatják azt."
+      },
+      {
+        "paragrafus": "75 §",
+        "megnevezes": "Parancsmegtagadás",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "PM",
+        "megjegyzes": "Lefokozás, Büntetőfeladat, \"Szemét munka\" elvégzése."
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Köznyugalom Elleni Bűncselekmények",
+    "tetelek": [
+      {
+        "paragrafus": "76 §",
+        "megnevezes": "Önkényuralmi Jelkép Használata",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "ÖJH",
+        "megjegyzes": "Sarló kalapács, zsidó csillag, stb stb."
+      },
+      {
+        "paragrafus": "77 §",
+        "megnevezes": "Rendbontás",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "RB",
+        "megjegyzes": "Aki a rendezvény rendjének fenntartásával szemben ellenállást tanúsít."
+      },
+      {
+        "paragrafus": "78 §",
+        "megnevezes": "Garázdaság",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Közellenes, aggresszív magatartásával másokban félelmet, riadalmat kelt.",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "-Magányosan",
+            "min_birsag": 120000,
+            "max_birsag": 240000,
+            "min_fegyhaz": 15,
+            "max_fegyhaz": 30,
+            "rovidites": "G/I.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "-Csoportosan",
+            "min_birsag": 150000,
+            "max_birsag": 300000,
+            "min_fegyhaz": 30,
+            "max_fegyhaz": 45,
+            "rovidites": "G/II.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(3)",
+            "megnevezes": "-Fegyveresen",
+            "min_birsag": 120000,
+            "max_birsag": 240000,
+            "min_fegyhaz": 45,
+            "max_fegyhaz": 60,
+            "rovidites": "G/III.",
+            "megjegyzes": ""
+          }
+        ]
+      },
+      {
+        "paragrafus": "79 §",
+        "megnevezes": "Hatósági Rendelkezés Elleni Uszítás",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HREU",
+        "megjegyzes": "Aki nyilvánosság előtt, a köznyugalom megzavarásával hatóság rendelkezése ellen uszít."
+      },
+      {
+        "paragrafus": "80 §",
+        "megnevezes": "Kábítószer Birtoklás",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "KB",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "81 §",
+        "megnevezes": "Kábítószer Árusítás",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "KÁ",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "82 §",
+        "megnevezes": "Kábítószer Termesztés",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "KT",
+        "megjegyzes": ""
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Emberi Szabadság Elleni Bűncselekmények",
+    "tetelek": [
+      {
+        "paragrafus": "83 §",
+        "megnevezes": "Gyilkosság",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Ez egy főkategória, aminek az alkategóriáit bünteted.",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "-Kisérlete",
+            "min_birsag": 150000,
+            "max_birsag": 300000,
+            "min_fegyhaz": 15,
+            "max_fegyhaz": 30,
+            "rovidites": "GY/I.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "-Gondatlanságból Elkövetett Emberölés",
+            "min_birsag": 150000,
+            "max_birsag": 300000,
+            "min_fegyhaz": 30,
+            "max_fegyhaz": 45,
+            "rovidites": "GY/II.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(3)",
+            "megnevezes": "-Előre Megtervezett Gyilkosság",
+            "min_birsag": 180000,
+            "max_birsag": 360000,
+            "min_fegyhaz": 45,
+            "max_fegyhaz": 60,
+            "rovidites": "GY/III.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(4)",
+            "megnevezes": "-Hivatali Személy Elleni Gyilkosság",
+            "min_birsag": 210000,
+            "max_birsag": 420000,
+            "min_fegyhaz": 60,
+            "max_fegyhaz": 75,
+            "rovidites": "GY/IV.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(5)",
+            "megnevezes": "-Terrorcselekményhez Fűződő Merénylet",
+            "min_birsag": 300000,
+            "max_birsag": 600000,
+            "min_fegyhaz": 60,
+            "max_fegyhaz": 90,
+            "rovidites": "GY/V.",
+            "megjegyzes": "Pl.: Bankrablás, Hivatali Terület vagy Egészségügyi intézmény megtámadása."
+          },
+          {
+            "paragrafus": "(6)",
+            "megnevezes": "-Különösen Visszaeső Által",
+            "min_birsag": 300000,
+            "max_birsag": 600000,
+            "min_fegyhaz": 30,
+            "max_fegyhaz": null,
+            "rovidites": "GY/VI.",
+            "megjegyzes": "Volt már előállítva többször korábban hasonló bűncselekményekért. (MDC Alapján)"
+          }
+        ]
+      },
+      {
+        "paragrafus": "84 §",
+        "megnevezes": "Emberrablás",
+        "min_birsag": 300000,
+        "max_birsag": 600000,
+        "min_fegyhaz": 60,
+        "max_fegyhaz": 90,
+        "rovidites": "E",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "85 §",
+        "megnevezes": "Emberrablás Feljelentésének Mulasztása",
+        "min_birsag": 225000,
+        "max_birsag": 450000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "EFM",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "86 §",
+        "megnevezes": "Emberkereskedelem",
+        "min_birsag": 450000,
+        "max_birsag": 900000,
+        "min_fegyhaz": 60,
+        "max_fegyhaz": 90,
+        "rovidites": "EK",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "87 §",
+        "megnevezes": "Személyi Szabadság Megsértése",
+        "min_birsag": 180000,
+        "max_birsag": 360000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "SZSZM",
+        "megjegyzes": "Akit megfosztanak a helyváltoztatási, mozgási jogaitól. Pl : Megkötözik, elrabolják."
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Emberi Méltóság és Alapvető Jogok Elleni Bűncselekmények",
+    "tetelek": [
+      {
+        "paragrafus": "88 §",
+        "megnevezes": "Személyes Adattal Való Visszaélés",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "SZAVV",
+        "megjegyzes": "Aki a személyes adatok biztonságát nem biztosítja, vagy jogosulatlanul felhasználja."
+      },
+      {
+        "paragrafus": "89 §",
+        "megnevezes": "Magánlaksértés",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "MLS",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "90 §",
+        "megnevezes": "Zaklatás",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "Z",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "91 §",
+        "megnevezes": "Becsületsértés",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "BS",
+        "megjegyzes": "Aki más becsületének rovására alkalmas kifejezést használ, vagy cselekményt követ el."
+      },
+      {
+        "paragrafus": "92 §",
+        "megnevezes": "Kegyeletsértés",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "KS",
+        "megjegyzes": "Aki halottat, vagy annak emlékét meggyalázza."
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Közbiztonság Elleni Bűncselekmények",
+    "tetelek": [
+      {
+        "paragrafus": "93 §",
+        "megnevezes": "Testi sértés",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "Ez egy főkategória, aminek az alkategóriáit bünteted.",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "- Könnyű testisértés",
+            "min_birsag": 45000,
+            "max_birsag": 90000,
+            "min_fegyhaz": 15,
+            "max_fegyhaz": 30,
+            "rovidites": "TS/I.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "- Súlyos testisértés",
+            "min_birsag": 90000,
+            "max_birsag": 180000,
+            "min_fegyhaz": 30,
+            "max_fegyhaz": 45,
+            "rovidites": "TS/II.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(3)",
+            "megnevezes": "- Életveszélyes sérülést okozó testisértés",
+            "min_birsag": 180000,
+            "max_birsag": 360000,
+            "min_fegyhaz": 45,
+            "max_fegyhaz": 60,
+            "rovidites": "TS/III.",
+            "megjegyzes": ""
+          }
+        ]
+      },
+      {
+        "paragrafus": "94 §",
+        "megnevezes": "Terrorcselekmény",
+        "min_birsag": 450000,
+        "max_birsag": 900000,
+        "min_fegyhaz": 60,
+        "max_fegyhaz": 90,
+        "rovidites": "TCS",
+        "megjegyzes": "Lakosságra, nemzetbiztonságra veszélyes vagy gazdaságra kiható cselekmény."
+      },
+      {
+        "paragrafus": "95 §",
+        "megnevezes": "Terrorcselekmény Feljelentésének Mulasztása",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "TFM",
+        "megjegyzes": "Aki tud a terrorcselekményről, de ennek jelentését a hatóságok felé elmulasztja."
+      },
+      {
+        "paragrafus": "96 §",
+        "megnevezes": "Terrorcselekmény Finanszírozása",
+        "min_birsag": 450000,
+        "max_birsag": 900000,
+        "min_fegyhaz": 60,
+        "max_fegyhaz": 90,
+        "rovidites": "TF",
+        "megjegyzes": "Aki terrorcselekményt anyagilag, vagy tárgyilag támogat."
+      },
+      {
+        "paragrafus": "97 §",
+        "megnevezes": "Bűnszövetkezetben való részvétel",
+        "min_birsag": 300000,
+        "max_birsag": 600000,
+        "min_fegyhaz": 60,
+        "max_fegyhaz": 90,
+        "rovidites": "BSZVR",
+        "megjegyzes": "Szervezett bűncsoportban való részvétel."
+      },
+      {
+        "paragrafus": "98 §",
+        "megnevezes": "Orvvadászat",
+        "min_birsag": 180000,
+        "max_birsag": 360000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "OV",
+        "megjegyzes": "Vadászterületen vadászként engedély nélkül vad elejtésére vagy elfogására irányuló tevékenységet végez."
+      },
+      {
+        "paragrafus": "99 §",
+        "megnevezes": "Illegális Fegyver Birtoklása",
+        "min_birsag": 180000,
+        "max_birsag": 360000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "IFB",
+        "megjegyzes": "Akkor is illegálisnak számít, ha van engedély rá de nincsen bejelentve az LSPD felé."
+      },
+      {
+        "paragrafus": "100 §",
+        "megnevezes": "Illegális Fegyver Kereskedelem",
+        "min_birsag": 300000,
+        "max_birsag": 600000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "IFK",
+        "megjegyzes": "Amennyiben van engedélye, bevonás."
+      },
+      {
+        "paragrafus": "101 §",
+        "megnevezes": "Illegális Alkotóelem Birtoklása",
+        "min_birsag": 90000,
+        "max_birsag": 90000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "IAB",
+        "megjegyzes": "Fegyveralkotóelem, vagy drogpalánta, egyéb illegális vegyület."
+      },
+      {
+        "paragrafus": "102 §",
+        "megnevezes": "Illegális Fegyvertár Birtoklása",
+        "min_birsag": 90000,
+        "max_birsag": 90000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "ITB",
+        "megjegyzes": "30db tár felett Terrorizmus Kategóriába Tartozik."
+      },
+      {
+        "paragrafus": "103 §",
+        "megnevezes": "Hivatali Szállítójármű Eltulajdonítása",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HSZE",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "104 §",
+        "megnevezes": "Rendvédelem Előli Menekülés",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "REM",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "105 §",
+        "megnevezes": "Rendvédelmi Utasítás Megszegése",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "RUM",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "106 §",
+        "megnevezes": "Rablás",
+        "min_birsag": 180000,
+        "max_birsag": 360000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "RA",
+        "megjegyzes": "Ilyenkor azt az összeget / tárgyakat amit kifosztott azt is el kell venni."
+      },
+      {
+        "paragrafus": "107 §",
+        "megnevezes": "Kifosztás",
+        "min_birsag": 90000,
+        "max_birsag": 180000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "K",
+        "megjegyzes": "Ilyenkor azt az összeget / tárgyakat amit kifosztott azt is el kell venni."
+      },
+      {
+        "paragrafus": "108 §",
+        "megnevezes": "Bűnrészesség",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": "BR",
+        "megjegyzes": "Aki a bűntett létrejövetele óta jelen van, és részt vesz benne."
+      }
+    ]
+  },
+  {
+    "kategoria_nev": "Közigazgatás Rendje Elleni Bűncselekmények",
+    "tetelek": [
+      {
+        "paragrafus": "109 §",
+        "megnevezes": "Határzár Tiltott Átlépése",
+        "min_birsag": 120000,
+        "max_birsag": 240000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "HTÁ",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "110 §",
+        "megnevezes": "Határzár Megrongálása",
+        "min_birsag": 150000,
+        "max_birsag": 300000,
+        "min_fegyhaz": 15,
+        "max_fegyhaz": 30,
+        "rovidites": "HM",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "111 §",
+        "megnevezes": "Embercsempészés",
+        "min_birsag": 300000,
+        "max_birsag": 600000,
+        "min_fegyhaz": 60,
+        "max_fegyhaz": 90,
+        "rovidites": "ECS",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "112 §",
+        "megnevezes": "Adócsalás",
+        "min_birsag": 300000,
+        "max_birsag": 600000,
+        "min_fegyhaz": 30,
+        "max_fegyhaz": 60,
+        "rovidites": "ACS",
+        "megjegyzes": ""
+      },
+      {
+        "paragrafus": "113 §",
+        "megnevezes": "Cégbejelentés elmulasztása",
+        "min_birsag": null,
+        "max_birsag": null,
+        "min_fegyhaz": null,
+        "max_fegyhaz": null,
+        "rovidites": null,
+        "megjegyzes": "",
+        "alpontok": [
+          {
+            "paragrafus": "(1)",
+            "megnevezes": "Kiskereskedelmi egység esetén:",
+            "min_birsag": 1000000,
+            "max_birsag": 1500000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "CE/I.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(2)",
+            "megnevezes": "Gépjárműbérlő esetén:",
+            "min_birsag": 1000000,
+            "max_birsag": 1500000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "CE/II.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(3)",
+            "megnevezes": "Gépjárműkereskedés esetén:",
+            "min_birsag": 3000000,
+            "max_birsag": 5000000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "CE/III.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(4)",
+            "megnevezes": "Gépjárműszerelő-műhely esetén:",
+            "min_birsag": 5000000,
+            "max_birsag": 7500000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "CE/IV.",
+            "megjegyzes": ""
+          },
+          {
+            "paragrafus": "(5)",
+            "megnevezes": "Töltőállomás esetén:",
+            "min_birsag": 5000000,
+            "max_birsag": 7500000,
+            "min_fegyhaz": null,
+            "max_fegyhaz": null,
+            "rovidites": "CE/V.",
+            "megjegyzes": ""
+          }
+        ]
+      }
+    ]
+  }
+]
