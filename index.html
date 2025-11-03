@@ -42,9 +42,44 @@
 			       class="w-full p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
 
 			<div id="item-list" class="space-y-4">
-				<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-					<h3 class="text-xl font-semibold mb-2">Betöltés...</h3>
-					<p class="text-gray-600 dark:text-gray-400">A Penal Code adatok betöltése folyamatban...</p>
+				<div class="animate-pulse space-y-4">
+					<div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+						<div class="p-4 border-b border-gray-200 dark:border-gray-700">
+							<div class="h-6 bg-gray-300 dark:bg-gray-700 rounded w-3/4"></div>
+						</div>
+						<div class="p-4 space-y-5 divide-y divide-gray-200 dark:divide-gray-700">
+							<div class="flex justify-between items-start pt-4 first:pt-0">
+								<div class="flex-1 space-y-2">
+									<div class="h-5 bg-gray-300 dark:bg-gray-700 rounded w-1/2"></div>
+									<div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-full"></div>
+									<div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4"></div>
+								</div>
+								<div class="h-8 bg-gray-300 dark:bg-gray-700 rounded w-20 ml-4"></div>
+							</div>
+							<div class="flex justify-between items-start pt-4 first:pt-0">
+								<div class="flex-1 space-y-2">
+									<div class="h-5 bg-gray-300 dark:bg-gray-700 rounded w-1/2"></div>
+									<div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-full"></div>
+									<div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4"></div>
+								</div>
+								<div class="h-8 bg-gray-300 dark:bg-gray-700 rounded w-20 ml-4"></div>
+							</div>
+						</div>
+					</div>
+					<div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+						<div class="p-4 border-b border-gray-200 dark:border-gray-700">
+							<div class="h-6 bg-gray-300 dark:bg-gray-700 rounded w-1/2"></div>
+						</div>
+						<div class="p-4 space-y-5 divide-y divide-gray-200 dark:divide-gray-700">
+							<div class="flex justify-between items-start pt-4 first:pt-0">
+								<div class="flex-1 space-y-2">
+									<div class="h-5 bg-gray-300 dark:bg-gray-700 rounded w-1/2"></div>
+									<div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-full"></div>
+								</div>
+								<div class="h-8 bg-gray-300 dark:bg-gray-700 rounded w-20 ml-4"></div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</main>
@@ -72,7 +107,12 @@
 					</div>
 				</div>
 				<div id="cart-items" class="max-h-64 overflow-y-auto space-y-2">
-					<p id="cart-placeholder" class="text-gray-500 text-center py-4">A jegyzőkönyv üres.</p>
+					<div id="cart-placeholder" class="text-gray-400 dark:text-gray-500 text-center py-6">
+						<svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+						</svg>
+						<p class="mt-2 text-sm">A jegyzőkönyv üres.</p>
+					</div>
 				</div>
 			</div>
 
