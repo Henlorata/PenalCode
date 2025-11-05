@@ -5,7 +5,7 @@ import {
   formatJailTime,
 } from "@/lib/penalcode-processor";
 import type {PenalCodeItem} from "@/types/penalcode";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import {useMediaQuery} from "@/hooks/use-media-query";
 
 // Shadcn UI Komponensek
 import {
@@ -14,8 +14,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -24,10 +24,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
-import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner";
+import {Slider} from "@/components/ui/slider";
+import {Textarea} from "@/components/ui/textarea";
+import {Toaster} from "@/components/ui/sonner";
+import {toast} from "sonner";
 import {
   Drawer,
   DrawerContent,
@@ -52,14 +52,14 @@ import {
   AlertCircle,
   AlertTriangle,
   Check,
-  ClipboardList, // JAVÍTÁS: Ikon cserélve (3. kérés)
+  ClipboardList,
   Copy,
   History,
   Search,
   Star,
   X,
 } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 
 // --- Típusdefiníciók ---
 
@@ -130,7 +130,7 @@ function getRelativeTime(timestamp: string) {
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
 
   try {
-    const rtf = new Intl.RelativeTimeFormat("hu", { numeric: "auto" });
+    const rtf = new Intl.RelativeTimeFormat("hu", {numeric: "auto"});
 
     if (diffInSeconds < 60) {
       return rtf.format(-diffInSeconds, "second");
@@ -154,7 +154,6 @@ function getRelativeTime(timestamp: string) {
 // --- A FŐ KOMPONENS ---
 
 export function PenalCodePage() {
-  // Állapotok (State)
   const [searchTerm, setSearchTerm] = React.useState("");
   const [isFavoritesView, setIsFavoritesView] = React.useState(false);
   const [cart, setCart] = React.useState<CartItem[]>([]);
@@ -197,13 +196,13 @@ export function PenalCodePage() {
     if (existing) {
       setCart(
         cart.map((c) =>
-          c.item.id === itemId ? { ...c, quantity: c.quantity + 1 } : c,
+          c.item.id === itemId ? {...c, quantity: c.quantity + 1} : c,
         ),
       );
     } else {
       const itemToAdd = allItems.find((item) => item.id === itemId);
       if (itemToAdd) {
-        setCart([...cart, { item: itemToAdd, quantity: 1 }]);
+        setCart([...cart, {item: itemToAdd, quantity: 1}]);
       }
     }
   };
@@ -218,7 +217,7 @@ export function PenalCodePage() {
     } else {
       setCart(
         cart.map((c) =>
-          c.item.id === itemId ? { ...c, quantity: newQuantity } : c,
+          c.item.id === itemId ? {...c, quantity: newQuantity} : c,
         ),
       );
     }
@@ -275,7 +274,7 @@ export function PenalCodePage() {
     const specialJailNotes: string[] = [];
     const warningItems: string[] = [];
 
-    cart.forEach(({ item, quantity }) => {
+    cart.forEach(({item, quantity}) => {
       if (item.isWarning && !warningItems.includes(item.megnevezes)) {
         warningItems.push(item.megnevezes);
       }
@@ -288,7 +287,7 @@ export function PenalCodePage() {
       if (typeof item.max_fegyhaz === "string" && item.max_fegyhaz !== item.min_fegyhaz) specialJailNotes.push(`${item.megnevezes}: ${item.max_fegyhaz} (x${quantity})`);
     });
 
-    const newSummary = { minFine, maxFine, minJail, maxJail, specialJailNotes, warningItems };
+    const newSummary = {minFine, maxFine, minJail, maxJail, specialJailNotes, warningItems};
     setSummary(newSummary);
 
     setSelectedFine(current => Math.max(newSummary.minFine, Math.min(newSummary.maxFine || Infinity, current || newSummary.minFine)));
@@ -306,7 +305,7 @@ export function PenalCodePage() {
     }
 
     const reasons = cart
-      .map(({ item, quantity }) =>
+      .map(({item, quantity}) =>
         `${item.rovidites}${quantity > 1 ? `(x${quantity})` : ""}`,
       )
       .join(", ");
@@ -330,7 +329,7 @@ export function PenalCodePage() {
   // Előzmények mentése
   const saveToHistory = () => {
     const reasons = cart
-      .map(({ item, quantity }) =>
+      .map(({item, quantity}) =>
         `${item.rovidites}${quantity > 1 ? `(x${quantity})` : ""}`,
       )
       .join(", ");
@@ -405,7 +404,7 @@ export function PenalCodePage() {
     if (filteredCategoryNames.length === 0) {
       return (
         <div className="text-center text-slate-400 py-12">
-          <Search className="mx-auto h-12 w-12" />
+          <Search className="mx-auto h-12 w-12"/>
           <h3 className="mt-2 text-lg font-medium">Nincs találat</h3>
           <p className="mt-1 text-sm">
             {isFavoritesView
@@ -428,18 +427,17 @@ export function PenalCodePage() {
             key={kategoriaNev}
             className="border-b-0 rounded-lg bg-slate-900 border border-slate-700 overflow-hidden"
           >
-            <AccordionTrigger className="text-xl font-semibold text-white px-4 hover:no-underline bg-slate-800/50 data-[state=open]:border-b border-slate-700">
+            <AccordionTrigger
+              className="text-xl font-semibold text-white px-4 hover:no-underline bg-slate-800/50 data-[state=open]:border-b border-slate-700">
               {kategoriaNev}
             </AccordionTrigger>
             <AccordionContent className="pt-0">
-              {/* JAVÍTÁS: 'divide-y' helyett 'space-y-2' és 'p-2' a szebb elválasztásért */}
               <div className="p-2 space-y-2">
                 {filteredItems[kategoriaNev].map((item) => {
                   const isInCart = cart.some((c) => c.item.id === item.id);
                   const isFavorite = favorites.includes(item.id);
 
                   return (
-                    // JAVÍTÁS: A paragrafusok mostantól lekerekített sarkú (rounded-lg) dobozok
                     <div
                       key={item.id}
                       className={`p-4 rounded-lg ${isInCart ? (item.isWarning ? "bg-amber-900/50" : "bg-blue-900/50") : "bg-slate-800/50"}`}
@@ -449,13 +447,14 @@ export function PenalCodePage() {
                           <h3 className="text-lg font-medium text-blue-300">
                             {item.megnevezes}
                             {item.isWarning && (
-                              <AlertTriangle className="inline w-4 h-4 ml-2 text-amber-400" />
+                              <AlertTriangle className="inline w-4 h-4 ml-2 text-amber-400"/>
                             )}
                           </h3>
                           <p className="text-sm text-slate-400">
                             {item.fo_tetel_nev ? `${item.fo_tetel_nev} (${item.paragrafus})` : item.paragrafus}
                           </p>
-                          <div className="text-sm mt-1 text-slate-200 space-y-1 md:space-y-0 md:space-x-4 flex flex-col md:flex-row">
+                          <div
+                            className="text-sm mt-1 text-slate-200 space-y-1 md:space-y-0 md:space-x-4 flex flex-col md:flex-row">
                             <span>Bírság: <strong>{formatCurrency(item.min_birsag)} - {formatCurrency(item.max_birsag)}</strong></span>
                             <span>Fegyház: <strong>{formatJailTime(item.min_fegyhaz)} - {formatJailTime(item.max_fegyhaz)}</strong></span>
                           </div>
@@ -477,7 +476,7 @@ export function PenalCodePage() {
                             data-favorite={isFavorite}
                             onClick={() => toggleFavorite(item.id)}
                           >
-                            <Star className="w-5 h-5" fill={isFavorite ? "currentColor" : "none"} />
+                            <Star className="w-5 h-5" fill={isFavorite ? "currentColor" : "none"}/>
                           </Button>
                         </div>
                       </div>
@@ -493,7 +492,6 @@ export function PenalCodePage() {
   };
 
   const renderSidebar = () => (
-    // JAVÍTÁS: A térköz (space-y-6) ide került át (1. kérés)
     <div className="space-y-6">
       <Card className="bg-slate-900 border-slate-700 text-white">
         <CardHeader>
@@ -501,28 +499,31 @@ export function PenalCodePage() {
           <CardDescription>A kiválasztott tételek</CardDescription>
         </CardHeader>
         <CardContent className="max-h-64 overflow-y-auto space-y-3 divide-y divide-slate-800">
-          {/* JAVÍTÁS: Ikon megjelenítése, ha a kosár üres (4. kérés) */}
           {cart.length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 text-slate-500">
-              <ClipboardList className="w-16 h-16" />
+              <ClipboardList className="w-16 h-16"/>
               <p className="mt-2 text-sm">A jegyzőkönyv üres.</p>
             </div>
           )}
-          {cart.map(({ item, quantity }) => (
+          {cart.map(({item, quantity}) => (
             <div key={item.id} className="flex justify-between items-center pt-3">
               <div className="flex-1 pr-2">
                 <p className="text-sm font-medium truncate">
                   {item.megnevezes}
-                  {item.isWarning && (<AlertTriangle className="inline w-4 h-4 ml-1 text-amber-400" />)}
+                  {item.isWarning && (<AlertTriangle className="inline w-4 h-4 ml-1 text-amber-400"/>)}
                 </p>
-                <p className="text-xs text-slate-400">{formatCurrency(item.min_birsag)} / {formatJailTime(item.min_fegyhaz)}</p>
+                <p
+                  className="text-xs text-slate-400">{formatCurrency(item.min_birsag)} / {formatJailTime(item.min_fegyhaz)}</p>
               </div>
               <div className="flex items-center space-x-1">
-                <Button variant="ghost" size="icon" className="w-6 h-6" onClick={() => updateCartQuantity(item.id, -1)}>-</Button>
+                <Button variant="ghost" size="icon" className="w-6 h-6"
+                        onClick={() => updateCartQuantity(item.id, -1)}>-</Button>
                 <span className="text-sm font-bold w-4 text-center">{quantity}</span>
-                <Button variant="ghost" size="icon" className="w-6 h-6" onClick={() => updateCartQuantity(item.id, 1)}>+</Button>
-                <Button variant="ghost" size="icon" className="w-6 h-6 text-red-500" onClick={() => updateCartQuantity(item.id, -quantity)}>
-                  <X className="w-4 h-4" />
+                <Button variant="ghost" size="icon" className="w-6 h-6"
+                        onClick={() => updateCartQuantity(item.id, 1)}>+</Button>
+                <Button variant="ghost" size="icon" className="w-6 h-6 text-red-500"
+                        onClick={() => updateCartQuantity(item.id, -quantity)}>
+                  <X className="w-4 h-4"/>
                 </Button>
               </div>
             </div>
@@ -535,7 +536,6 @@ export function PenalCodePage() {
         )}
       </Card>
 
-      {/* JAVÍTÁS: Eltávolítva az 'mt-6' innen (1. kérés) */}
       <Card className="bg-slate-900 border-slate-700 text-white">
         <CardHeader>
           <CardTitle>Összesítés</CardTitle>
@@ -543,7 +543,7 @@ export function PenalCodePage() {
         <CardContent className="space-y-4">
           {summary.warningItems.length > 0 && (
             <Alert variant="destructive" className="bg-amber-900 border-amber-700 text-amber-200">
-              <AlertTriangle className="h-4 w-4" color="#fcd34d" />
+              <AlertTriangle className="h-4 w-4" color="#fcd34d"/>
               <AlertTitle>Eltiltás/Bevonás Lehetséges</AlertTitle>
               <AlertDescription className="text-xs">
                 A jegyzőkönyv figyelmeztetéssel járó tételeket tartalmaz.
@@ -608,7 +608,7 @@ export function PenalCodePage() {
           </div>
           {summary.specialJailNotes.length > 0 && (
             <Alert variant="default" className="bg-slate-800 border-slate-700 text-slate-300">
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle className="h-4 w-4"/>
               <AlertTitle>Speciális tételek</AlertTitle>
               <AlertDescription className="text-xs">
                 <ul className="list-disc list-inside">
@@ -620,14 +620,14 @@ export function PenalCodePage() {
         </CardContent>
       </Card>
 
-      {/* JAVÍTÁS: Eltávolítva az 'mt-6' innen (1. kérés) */}
       <Card className="bg-slate-900 border-slate-700 text-white">
         <CardHeader>
           <CardTitle>Parancs Generátor</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Input placeholder="Célpont ID" value={targetId} onChange={(e) => setTargetId(e.target.value)} />
-          <Textarea readOnly value={commandOutput || "A parancsok itt fognak megjelenni..."} className="h-24 bg-slate-800" />
+          <Input placeholder="Célpont ID" value={targetId} onChange={(e) => setTargetId(e.target.value)}/>
+          <Textarea readOnly value={commandOutput || "A parancsok itt fognak megjelenni..."}
+                    className="h-24 bg-slate-800"/>
         </CardContent>
         <CardFooter>
           <Button
@@ -636,11 +636,17 @@ export function PenalCodePage() {
             disabled={!commandOutput || isCopied}
             variant={isCopied ? "secondary" : "default"}
           >
-            {isCopied ? ( <Check className="w-4 h-4 mr-2" /> ) : ( <Copy className="w-4 h-4 mr-2" /> )}
+            {isCopied ? (<Check className="w-4 h-4 mr-2"/>) : (<Copy className="w-4 h-4 mr-2"/>)}
             {isCopied ? "Másolva!" : "Parancsok Másolása"}
           </Button>
         </CardFooter>
       </Card>
+
+      <div className="text-center text-xs text-slate-500 px-4 pt-2">
+        <p>A rendszert készítette: <strong>Matuza Balázs</strong> // <strong>Martin Lothbrok</strong></p>
+        <p>Büntetőtörvénykönyv adatok: <strong>Tetsu</strong></p>
+      </div>
+
     </div>
   );
 
@@ -656,7 +662,8 @@ export function PenalCodePage() {
               <div key={item.timestamp} className="flex justify-between items-center p-3 bg-slate-800 rounded-lg">
                 <div>
                   <p className="font-medium">{formatCurrency(item.finalFine)} / {item.finalJail} perc</p>
-                  <p className="text-sm text-slate-400 truncate max-w-xs" title={item.reasons}>{item.reasons || "(Nincs ok)"}</p>
+                  <p className="text-sm text-slate-400 truncate max-w-xs"
+                     title={item.reasons}>{item.reasons || "(Nincs ok)"}</p>
                   <p className="text-xs text-slate-500">{getRelativeTime(item.timestamp)}</p>
                 </div>
                 <Button onClick={() => loadFromHistory(item)}>
@@ -674,7 +681,7 @@ export function PenalCodePage() {
         <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="icon" className="shrink-0">
-              <History className="w-5 h-5" />
+              <History className="w-5 h-5"/>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md" aria-describedby="history-dialog-description">
@@ -700,7 +707,7 @@ export function PenalCodePage() {
       <Drawer open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
         <DrawerTrigger asChild>
           <Button variant="outline" className="w-full">
-            <History className="w-4 h-4 mr-2" /> Előzmények
+            <History className="w-4 h-4 mr-2"/> Előzmények
           </Button>
         </DrawerTrigger>
         <DrawerContent className="max-h-[90vh]" aria-describedby="history-drawer-description">
@@ -724,16 +731,13 @@ export function PenalCodePage() {
   };
 
 
-  // --- JSX Visszatérés (Fő elrendezés) ---
-
   return (
     <>
-      <Toaster position="top-right" richColors theme="dark" />
+      <Toaster position="top-right" richColors theme="dark"/>
 
-      {/* Fejléc (Kereső és Gombok) */}
       <div className="flex items-center gap-4 mb-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/>
           <Input
             placeholder="Keresés (név, rövidítés, paragrafus...)"
             className="pl-10"
@@ -747,29 +751,24 @@ export function PenalCodePage() {
           className={isFavoritesView ? "text-yellow-400" : ""}
           onClick={() => setIsFavoritesView(!isFavoritesView)}
         >
-          <Star className="w-5 h-5" />
+          <Star className="w-5 h-5"/>
         </Button>
-        {isDesktop && <HistoryModal />}
+        {isDesktop && <HistoryModal/>}
       </div>
 
-      {/* Törzs (Kétoszlopos elrendezés) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start">
         {/* Bal oszlop: Tételek */}
         <div className="lg:col-span-2 bg-slate-900 rounded-lg border border-slate-700 overflow-hidden">
           {renderItemList()}
         </div>
 
-        {/* Jobb oszlop: Kosár (Csak desktop) */}
         {isDesktop && (
-          // JAVÍTÁS: 'space-y-6' eltávolítva innen. Hozzáadva 'max-h' és 'overflow-y-auto' a görgetéshez.
-          // JAVÍTÁS: Hozzáadva a 'scrollbar-hide' osztály (2. kérés)
           <div className="lg:col-span-1 lg:sticky lg:top-24 max-h-[calc(100vh-7rem)] overflow-y-auto scrollbar-hide">
             {renderSidebar()}
           </div>
         )}
       </div>
 
-      {/* Mobil nézet lebegő gomb és Drawer */}
       {!isDesktop && (
         <Drawer open={isMobileDrawerOpen} onOpenChange={setIsMobileDrawerOpen}>
           <DrawerTrigger asChild>
@@ -778,16 +777,17 @@ export function PenalCodePage() {
               size="icon"
               className="fixed bottom-4 right-4 h-14 w-14 rounded-full shadow-lg lg:hidden"
             >
-              {/* JAVÍTÁS: Ikon cserélve (3. kérés) */}
-              <ClipboardList className="w-6 h-6" />
+              <ClipboardList className="w-6 h-6"/>
               {cart.length > 0 && (
-                <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                <span
+                  className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
                    {cart.reduce((acc, item) => acc + item.quantity, 0)}
                  </span>
               )}
             </Button>
           </DrawerTrigger>
-          <DrawerContent className="bg-slate-950 border-slate-800 text-white max-h-[90vh]" aria-describedby="cart-drawer-description">
+          <DrawerContent className="bg-slate-950 border-slate-800 text-white max-h-[90vh]"
+                         aria-describedby="cart-drawer-description">
             <DrawerHeader>
               <DrawerTitle>Jegyzőkönyv & Összesítés</DrawerTitle>
               <DrawerDescription id="cart-drawer-description">
@@ -798,7 +798,7 @@ export function PenalCodePage() {
               {renderSidebar()}
             </div>
             <DrawerFooter className="pt-4">
-              <HistoryModal />
+              <HistoryModal/>
               <DrawerClose asChild>
                 <Button variant="outline">Bezárás</Button>
               </DrawerClose>

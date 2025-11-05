@@ -1,7 +1,6 @@
 import penalCodeData from "../data/penalcode.json";
 import type {Kategoria, PenalCodeItem} from "@/types/penalcode";
 
-// Ugyanazok a kulcsszavak, mint az app.js-ben
 const WARNING_KEYWORDS = [
   "eltiltható",
   "bevonható",
@@ -24,7 +23,6 @@ export const prepareData = (): PenalCodeItem[] => {
       const foMegjegyzes = tetel.megjegyzes || "";
 
       if (tetel.alpontok && tetel.alpontok.length > 0) {
-        // Ha vannak alpontok, azokat adjuk hozzá
         tetel.alpontok.forEach((alpont) => {
           const alpontMegjegyzes = alpont.megjegyzes || "";
           const fullNote = `${foMegjegyzes} ${alpontMegjegyzes}`.trim();
@@ -39,7 +37,6 @@ export const prepareData = (): PenalCodeItem[] => {
           });
         });
       } else if (tetel.rovidites) {
-        // Ha nincs alpont, de van rövidítés (azaz büntethető), akkor a fő tételt adjuk hozzá
         allItems.push({
           id: `item-${idCounter++}`,
           kategoria_nev: kategoria.kategoria_nev,
@@ -54,13 +51,11 @@ export const prepareData = (): PenalCodeItem[] => {
           isWarning: checkWarning(tetel.megjegyzes),
         });
       }
-      // Ha se alpont, se rövidítés, akkor az egy "főkategória" (pl. "Gyorshajtás..."), azt kihagyjuk a listából
     });
   });
   return allItems;
 };
 
-// Segédfüggvények portolása az app.js-ből
 export const formatCurrency = (value: number | null | undefined): string => {
   if (value === null || value === undefined) return "---";
   return `$${value.toLocaleString("hu-HU")}`;
@@ -70,6 +65,6 @@ export const formatJailTime = (
   value: number | string | null | undefined,
 ): string => {
   if (value === null || value === undefined) return "---";
-  if (typeof value === "string") return value; // Pl. "+ 30 perc"
+  if (typeof value === "string") return value;
   return `${value} perc`;
 };

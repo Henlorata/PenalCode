@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Shield } from "lucide-react";
+import { Shield, Briefcase } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function HomePage() {
@@ -12,15 +12,14 @@ export function HomePage() {
         </p>
       </header>
 
-      <main className="flex flex-col md:flex-row gap-6">
-        {/* SFSD Kártya */}
+      <main className="flex flex-col md:flex-row flex-wrap justify-center gap-6">
         <Link to="/sfsd" className="w-full md:w-64">
           <Button
             variant="outline"
             className="w-full h-auto p-6 flex flex-col items-center justify-center gap-4 bg-slate-800 hover:bg-slate-700 border-slate-700"
           >
             <Shield size={48} className="text-blue-400" />
-            <span className="text-lg font-semibold">
+            <span className="text-lg font-semibold text-center">
               San Fierro
               <br />
               Sheriff's Department
@@ -28,14 +27,27 @@ export function HomePage() {
           </Button>
         </Link>
 
-        {/* LSPD Kártya (Inaktív) */}
+        <Link to="/mcb/login" className="w-full md:w-64">
+          <Button
+            variant="outline"
+            className="w-full h-auto p-6 flex flex-col items-center justify-center gap-4 bg-slate-800 hover:bg-slate-700 border-slate-700"
+          >
+            <Briefcase size={48} className="text-yellow-500" />
+            <span className="text-lg font-semibold text-center">
+              Major Crimes Bureau
+              <br />
+              Adatbázis
+            </span>
+          </Button>
+        </Link>
+
         <Button
           variant="outline"
           disabled
           className="w-full md:w-64 h-auto p-6 flex flex-col items-center justify-center gap-4 bg-slate-800 border-slate-700 opacity-50"
         >
           <Shield size={48} className="text-gray-500" />
-          <span className="text-lg font-semibold">
+          <span className="text-lg font-semibold text-center">
             Los Santos
             <br />
             Police Department
