@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { supabaseAdmin, isUserAdmin } from '../lib/supabase-admin.ts';
-
-// A segédfüggvények törölve innen
+// JAVÍTÁS: .ts eltávolítva az import végéről
+import { supabaseAdmin, isUserAdmin } from '../lib/supabase-admin';
 
 // A FŐ FUNKCIÓ
 export default async function handler(
