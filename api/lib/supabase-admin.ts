@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Kiemeljük a változókat, hogy egyértelmű legyen
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || '';
 
-// 1. Admin kliens (SERVICE_KEY)
+console.log('--- supabase-admin.ts modultöltés ---');
+console.log('Supabase URL (első 10 karakter):', supabaseUrl.substring(0, 10));
+
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
@@ -17,21 +18,25 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   }
 });
 
-// 2. Közös segédfüggvény
-// JAVÍTÁS: A visszatérési érték már lehet string (hibaüzenet) is
+console.log('--- supabaseAdmin kliens létrehozva ---');
+
 export const isUserAdmin = async (token: string): Promise<boolean | string> => {
+  console.log('--- isUserAdmin futtatása ---');
   try {
-    // 1. Kinyerjük a felhasználót a tokenből
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
     if (userError) {
-      return `auth.getUser error: ${userError.message}`; // Hiba visszaküldése
+      console.error('isUserAdmin hiba (auth.getUser):', userError.message);
+      return `auth.getUser error: ${userError.message}`;
     }
     if (!user) {
-      return "No user found for token"; // Hiba visszaküldése
+      console.warn('isUserAdmin hiba: Nincs felhasználó ehhez a tokenhez');
+      return "No user found for token";
     }
+    console.log('isUserAdmin: Felhasználó azonosítva:', user.id);
 
-    // 2. Lekérjük a profilját és ellenőrizzük a rangját
+    // --- EZ A RÉSZ OKOZZA A HIBÁT ---
+    console.log('isUserAdmin: Profil lekérdezése...');
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role')
@@ -39,14 +44,17 @@ export const isUserAdmin = async (token: string): Promise<boolean | string> => {
       .single();
 
     if (profileError) {
-      // VALÓSZÍNŰLEG ITT A HIBA (pl. RLS blokkolja a select-et)
-      return `profiles.select error: ${profileError.message}`; // Hiba visszaküldése
+      // EZT A HIBÁT FOGJUK KERESNI A VERCEL LOGOKBAN
+      console.error('isUserAdmin hiba (profiles.select):', profileError.message);
+      return `profiles.select error: ${profileError.message}`;
     }
+    console.log('isUserAdmin: Profil lekérdezve:', profile);
+    // --- EDDIG ---
 
-    // Ha minden sikeres, visszatérünk a logikai értékkel
     return profile && profile.role === 'lead_detective';
 
   } catch (e: any) {
-    return `isUserAdmin global catch block: ${e.message}`; // Hiba visszaküldése
+    console.error('isUserAdmin GLOBÁLIS HIBA:', e.message);
+    return `isUserAdmin global catch block: ${e.message}`;
   }
 };
