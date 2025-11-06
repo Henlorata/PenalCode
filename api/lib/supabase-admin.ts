@@ -6,10 +6,6 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || '';
 
 // 1. Admin kliens (SERVICE_KEY)
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  // --- EZ A JAVÍTÁS ---
-  // Kifejezetten megmondjuk a kliensnek, hogy minden kérésnél
-  // ezt a service key-t használja az authorizációhoz,
-  // ezzel 100%-ban kényszerítve az RLS (Row Level Security) megkerülését.
   auth: {
     autoRefreshToken: false,
     persistSession: false
@@ -19,24 +15,38 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       Authorization: `Bearer ${supabaseServiceKey}`
     }
   }
-  // --- JAVÍTÁS VÉGE ---
 });
 
 // 2. Közös segédfüggvény
-export const isUserAdmin = async (token: string) => {
-  // 1. Kinyerjük a felhasználót a tokenből (az admin klienssel)
-  const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
-  if (userError || !user) {
-    return false;
+// JAVÍTÁS: A visszatérési érték már lehet string (hibaüzenet) is
+export const isUserAdmin = async (token: string): Promise<boolean | string> => {
+  try {
+    // 1. Kinyerjük a felhasználót a tokenből
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+
+    if (userError) {
+      return `auth.getUser error: ${userError.message}`; // Hiba visszaküldése
+    }
+    if (!user) {
+      return "No user found for token"; // Hiba visszaküldése
+    }
+
+    // 2. Lekérjük a profilját és ellenőrizzük a rangját
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError) {
+      // VALÓSZÍNŰLEG ITT A HIBA (pl. RLS blokkolja a select-et)
+      return `profiles.select error: ${profileError.message}`; // Hiba visszaküldése
+    }
+
+    // Ha minden sikeres, visszatérünk a logikai értékkel
+    return profile && profile.role === 'lead_detective';
+
+  } catch (e: any) {
+    return `isUserAdmin global catch block: ${e.message}`; // Hiba visszaküldése
   }
-
-  // 2. Lekérjük a profilját és ellenőrizzük a rangját
-  // (Ehhez is az admin klienst használjuk, mivel az RLS-t ki kell kerülni)
-  const { data: profile, error: profileError } = await supabaseAdmin
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  return !profileError && profile && profile.role === 'lead_detective';
 };
