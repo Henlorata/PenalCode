@@ -1,10 +1,11 @@
 // FrakHub/src/pages/mcb/CaseDetailPage.tsx
-// (JAVÍTVA: A Közreműködők kártya most már dinamikus max-magassággal rendelkezik)
+// (KIEGÉSZÍTVE: Akta Kezelése kártya és státuszváltás logika)
 
 import * as React from "react";
 import {useParams, Link} from "react-router-dom";
 import {useAuth} from "@/context/AuthContext";
-import type {Case, Profile, CaseCollaborator} from "@/types/supabase";
+// VÁLTOZÁS: CaseStatus importálva
+import type {Case, Profile, CaseCollaborator, CaseStatus} from "@/types/supabase";
 import {
   Card,
   CardContent,
@@ -25,6 +26,10 @@ import {
   Edit,
   FileText,
   Image,
+  Lock, // VÁLTOZÁS: Új ikon
+  Archive, // VÁLTOZÁS: Új ikon
+  FolderOpen, // VÁLTOZÁS: Új ikon
+  Settings, // VÁLTOZÁS: Új ikon
 } from "lucide-react";
 import {toast} from "sonner";
 import {CaseEditor} from "@/pages/mcb/components/CaseEditor.tsx";
@@ -38,6 +43,17 @@ import {
   DialogTitle,
   DialogFooter as DialogFooterComponent,
 } from "@/components/ui/dialog";
+// VÁLTOZÁS: Új import a megerősítő ablakhoz
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { CaseEvidenceTab } from "./components/CaseEvidenceTab";
 
@@ -85,14 +101,15 @@ export function CaseDetailPage() {
   const [isAddCollabOpen, setIsAddCollabOpen] = React.useState(false);
   const [activeView, setActiveView] = React.useState<'content' | 'evidence'>('content');
 
-  // --- EREDETI LOGIKA KIEGÉSZÍTÉSE ---
-  const rightColumnRef = React.useRef<HTMLDivElement>(null);
-  const leftHeaderRef = React.useRef<HTMLDivElement>(null);
-  const [editorCardHeight, setEditorCardHeight] = React.useState<string | number>('auto');
+  // --- VÁLTOZÁS: Új state-ek a státusz változtatásához ---
+  const [isStatusAlertOpen, setIsStatusAlertOpen] = React.useState(false);
+  const [targetStatus, setTargetStatus] = React.useState<CaseStatus | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
 
-  // VÁLTOZÁS: Új ref és state a Közreműködők kártya magasságához
-  const collaboratorsCardRef = React.useRef<HTMLDivElement>(null);
-  const [collaboratorMaxHeight, setCollaboratorMaxHeight] = React.useState<string | number>('350px');
+  // --- Magasság logika (VÁLTOZATLAN) ---
+  const leftHeaderRef = React.useRef<HTMLDivElement>(null);
+  const contentCardRef = React.useRef<HTMLDivElement>(null);
+  const [contentCardHeight, setContentCardHeight] = React.useState<string | number>('auto');
 
   // ... fetchCaseDetails (VÁLTOZATLAN) ...
   const fetchCaseDetails = React.useCallback(async () => {
@@ -151,61 +168,41 @@ export function CaseDetailPage() {
     fetchCaseDetails();
   }, [fetchCaseDetails]);
 
-  // --- AZ EREDETI LOGIKA (KIEGÉSZÍTVE) ---
+  // --- Magasság logika (VÁLTOZATLAN) ---
   React.useLayoutEffect(() => {
-    // VÁLTOZATLAN: Csak 'content' nézetben számolunk
     if (activeView === 'content') {
       const calculateHeight = () => {
         if (window.innerWidth < 1024) {
-          setEditorCardHeight('auto');
-          setCollaboratorMaxHeight('350px'); // Mobilon marad a fix
+          setContentCardHeight('auto');
           return;
         }
-
-        // VÁLTOZATLAN: Bal oldal magasságának számítása
-        if (rightColumnRef.current && leftHeaderRef.current) {
-          const rightHeight = rightColumnRef.current.offsetHeight;
-          const leftHeaderHeight = leftHeaderRef.current.offsetHeight;
-          const gap = 24;
-          const newHeight = rightHeight - leftHeaderHeight - gap;
-          setEditorCardHeight(newHeight > 400 ? newHeight : 400);
-        }
-
-        // --- VÁLTOZÁS: Jobb oldal (Közreműködők) max-magasságának számítása ---
-        if (collaboratorsCardRef.current) {
-          const topOffset = collaboratorsCardRef.current.getBoundingClientRect().top;
-          // 24px = a grid 'gap-6' alul, hogy ne érjen le teljesen a lap aljáig
-          const newMaxHeight = window.innerHeight - topOffset - 24;
-
-          // A min magasság 350px, de a max ne legyen kevesebb ennél
-          setCollaboratorMaxHeight(newMaxHeight > 350 ? newMaxHeight : 350);
+        if (leftHeaderRef.current && contentCardRef.current) {
+          const contentTopOffset = contentCardRef.current.getBoundingClientRect().top;
+          const viewportHeight = window.innerHeight;
+          const bottomPadding = 32;
+          const newHeight = viewportHeight - contentTopOffset - bottomPadding;
+          setContentCardHeight(newHeight > 400 ? newHeight : 400);
         }
       };
-
       const timer = setTimeout(calculateHeight, 50);
       window.addEventListener('resize', calculateHeight);
       const observer = new ResizeObserver(calculateHeight);
-
-      // VÁLTOZATLAN: Figyeljük a jobb oszlopot
-      if (rightColumnRef.current) {
-        observer.observe(rightColumnRef.current);
+      if (leftHeaderRef.current) {
+        observer.observe(leftHeaderRef.current);
       }
-
       return () => {
         clearTimeout(timer);
         window.removeEventListener('resize', calculateHeight);
         observer.disconnect();
       };
     } else {
-      // VÁLTOZATLAN: Más nézetben resetelünk
-      setEditorCardHeight('auto');
-      setCollaboratorMaxHeight('350px');
+      setContentCardHeight('auto');
     }
   }, [details, isLoading, activeView]);
 
 
-  // ... (a többi handler, canEdit, canManageCollaborators VÁLTOZATLAN) ...
-  const handleEditorSave = async () => {
+  // ... (a többi handler, canEdit VÁLTOZATLAN) ...
+  const handleEditorSave = async () => { /* ... (változatlan) ... */
     if (!caseId || !tempEditorContent) return;
     setIsSaving(true);
     const {error} = await supabase
@@ -233,15 +230,15 @@ export function CaseDetailPage() {
       setIsEditorOpen(false);
     }
   };
-  const handleEditorCancel = () => {
+  const handleEditorCancel = () => { /* ... (változatlan) ... */
     setIsEditorOpen(false);
     setTempEditorContent(undefined);
   };
-  const handleOpenEditor = () => {
+  const handleOpenEditor = () => { /* ... (változatlan) ... */
     setTempEditorContent(editorContent);
     setIsEditorOpen(true);
   };
-  const canEdit = React.useMemo(() => {
+  const canEdit = React.useMemo(() => { /* ... (változatlan) ... */
     if (!profile || !details) return false;
     if (profile.role === 'lead_detective') return true;
     if (profile.id === details?.caseDetails.case.owner_id) return true;
@@ -249,12 +246,80 @@ export function CaseDetailPage() {
       (c: CollaboratorDetail) => c.collaborator.user_id === profile.id && c.collaborator.status === 'approved'
     );
   }, [profile, details]);
+
+  // VÁLTOZÁS: A `canEdit` helyett a szigorúbb `canManageCollaborators`-t használjuk
   const canManageCollaborators = React.useMemo(() => {
     if (!profile || !details) return false;
     if (profile.role === 'lead_detective') return true;
     if (profile.id === details?.caseDetails.case.owner_id) return true;
     return false;
   }, [profile, details]);
+
+  // --- VÁLTOZÁS: Új handler-ek a státusz váltáshoz ---
+
+  /** Megnyitja a megerősítő ablakot */
+  const handleOpenStatusAlert = (newStatus: CaseStatus) => {
+    setTargetStatus(newStatus);
+    setIsStatusAlertOpen(true);
+  };
+
+  /** Bezárja a megerősítő ablakot */
+  const handleCancelStatusChange = () => {
+    setIsStatusAlertOpen(false);
+    setIsUpdatingStatus(false);
+    setTimeout(() => setTargetStatus(null), 300); // Késleltetés az animációhoz
+  };
+
+  /** Lefuttatja a státusz változtatást */
+  const handleConfirmStatusChange = async () => {
+    if (!targetStatus || !caseId || !details) return;
+
+    setIsUpdatingStatus(true);
+
+    const { error } = await supabase
+      .from("cases")
+      .update({ status: targetStatus })
+      .eq("id", caseId);
+
+    setIsUpdatingStatus(false);
+
+    if (error) {
+      toast.error("Hiba az akta státuszának frissítésekor", {
+        description: error.message,
+      });
+      handleCancelStatusChange();
+    } else {
+      toast.success("Akta státusza sikeresen frissítve!");
+
+      // Frissítjük a lokális state-et, hogy azonnal látszódjon a változás
+      setDetails({
+        ...details,
+        caseDetails: {
+          ...details.caseDetails,
+          case: {
+            ...details.caseDetails.case,
+            status: targetStatus,
+          },
+        },
+      });
+      handleCancelStatusChange();
+    }
+  };
+
+  // Dinamikus szöveg a megerősítő ablakhoz
+  const getAlertDialogStrings = () => {
+    switch (targetStatus) {
+      case 'open':
+        return { title: 'Akta újranyitása', description: 'Biztosan újranyitod ezt az aktát? A közreműködők ismét szerkeszthetik.' };
+      case 'closed':
+        return { title: 'Akta lezárása', description: 'Biztosan lezárod ezt az aktát? A közreműködők többé nem szerkeszthetik.' };
+      case 'archived':
+        return { title: 'Akta archiválása', description: 'Biztosan archiválod ezt az aktát? Az akta elkerül az aktív listáról és nem szerkeszthető.' };
+      default:
+        return { title: '', description: '' };
+    }
+  };
+
 
   // ... (Betöltés és Hiba nézet VÁLTOZATLAN) ...
   if (isLoading) {
@@ -281,6 +346,7 @@ export function CaseDetailPage() {
 
   const {case: caseData, owner} = details.caseDetails;
   const {collaborators} = details;
+  const { title: alertTitle, description: alertDescription } = getAlertDialogStrings();
 
   return (
     <div className="space-y-6 flex-1 flex flex-col">
@@ -327,7 +393,7 @@ export function CaseDetailPage() {
 
       {/* 2. SOR: FŐ TARTALOM */}
 
-      {/* 1. NÉZET: AKTA TARTALMA (AZ EREDETI LOGIKA) */}
+      {/* 1. NÉZET: AKTA TARTALMA (VÁLTOZATLAN) */}
       {activeView === 'content' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 lg:items-start">
 
@@ -351,8 +417,9 @@ export function CaseDetailPage() {
             </Card>
 
             <Card
+              ref={contentCardRef}
               className="bg-slate-900 border-slate-700 text-white flex flex-col !py-0 !gap-0"
-              style={{ height: editorCardHeight }}
+              style={{ height: contentCardHeight }}
             >
               <CardHeader className="p-6">
                 <h3 className="text-xl font-semibold">Akta Tartalma</h3>
@@ -374,7 +441,7 @@ export function CaseDetailPage() {
           </div>
 
           {/* JOBB OSZLOP (Ragadós oldalsáv) */}
-          <div className="lg:col-span-1 space-y-6" ref={rightColumnRef}>
+          <div className="lg:col-span-1 space-y-6 lg:sticky top-24">
 
             <Card className="bg-slate-800 border-slate-700 !py-0 !gap-0">
               <CardHeader className="p-6 !pb-0">
@@ -382,21 +449,13 @@ export function CaseDetailPage() {
                   <Shield className="w-5 h-5 text-blue-400"/> Akta Tulajdonosa
                 </CardTitle>
               </CardHeader>
-              {/* JAVÍTÁS (Előző kérésből): p-6 -> px-6 pt-0 pb-4 */}
               <CardContent className="px-6 pt-0 pb-4">
                 <p className="text-base">{owner.full_name}</p>
                 <p className="text-sm text-slate-400">{owner.role}</p>
               </CardContent>
             </Card>
 
-            {/* --- VÁLTOZÁS ITT --- */}
-            <Card
-              ref={collaboratorsCardRef} // Ref hozzáadva
-              className="bg-slate-800 border-slate-700 flex flex-col !py-0 !gap-0"
-              // A h-[350px] eltávolítva, style hozzáadva
-              style={{ minHeight: '350px', maxHeight: collaboratorMaxHeight }}
-            >
-              {/* --- VÁLTOZÁS VÉGE --- */}
+            <Card className="bg-slate-800 border-slate-700 flex flex-col h-[350px] !py-0 !gap-0">
               <CardHeader className="p-6 flex-shrink-0">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Users className="w-5 h-5 text-green-400"/> Közreműködők
@@ -433,6 +492,41 @@ export function CaseDetailPage() {
                 </CardFooter>
               )}
             </Card>
+
+            {/* --- VÁLTOZÁS: ÚJ AKTA KEZELÉSE KÁRTYA --- */}
+            {canManageCollaborators && (
+              <Card className="bg-slate-800 border-slate-700 !py-0 !gap-0">
+                <CardHeader className="p-6 !pb-0">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Settings className="w-5 h-5 text-gray-400"/> Akta Kezelése
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-2">
+                  {caseData.status === 'open' && (
+                    <>
+                      <Button variant="outline" className="w-full" onClick={() => handleOpenStatusAlert('closed')}>
+                        <Lock className="w-4 h-4 mr-2"/> Akta Lezárása
+                      </Button>
+                      <Button variant="destructive" className="w-full" onClick={() => handleOpenStatusAlert('archived')}>
+                        <Archive className="w-4 h-4 mr-2"/> Akta Archiválása
+                      </Button>
+                    </>
+                  )}
+                  {caseData.status === 'closed' && (
+                    <Button variant="outline" className="w-full" onClick={() => handleOpenStatusAlert('open')}>
+                      <FolderOpen className="w-4 h-4 mr-2"/> Akta Újranyitása
+                    </Button>
+                  )}
+                  {caseData.status === 'archived' && (
+                    <Button variant="outline" className="w-full" onClick={() => handleOpenStatusAlert('open')}>
+                      <FolderOpen className="w-4 h-4 mr-2"/> Akta Visszaállítása (Megnyitás)
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+            {/* --- VÁLTOZÁS VÉGE --- */}
+
           </div>
         </div>
       )}
@@ -444,7 +538,9 @@ export function CaseDetailPage() {
         </div>
       )}
 
-      {/* --- DIALÓGUSOK (Változatlan) --- */}
+      {/* --- DIALÓGUSOK --- */}
+
+      {/* Szerkesztő Dialógus (Változatlan) */}
       <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white w-[95vw] max-w-[95vw] sm:max-w-[95vw] h-[95vh] flex flex-col p-4">
           <DialogHeader>
@@ -477,6 +573,7 @@ export function CaseDetailPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Közreműködő Dialógus (Változatlan) */}
       {canManageCollaborators && (
         <AddCollaboratorDialog
           caseId={caseId!}
@@ -489,6 +586,28 @@ export function CaseDetailPage() {
           }}
         />
       )}
+
+      {/* --- VÁLTOZÁS: ÚJ STÁTUSZ MEGERŐSÍTŐ DIALÓGUS --- */}
+      <AlertDialog open={isStatusAlertOpen} onOpenChange={handleCancelStatusChange}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {alertDescription}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isUpdatingStatus}>Mégse</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmStatusChange} disabled={isUpdatingStatus}>
+              {isUpdatingStatus ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : null}
+              {isUpdatingStatus ? 'Folyamatban...' : 'Igen, megerősítem'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 }
