@@ -1,142 +1,147 @@
-import * as React from "react";
-import { supabase } from "@/lib/supabaseClient";
-import type { AuthSession } from "@supabase/supabase-js";
-import type { Profile } from "@/types/supabase";
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import { createClient, type Session, type User, SupabaseClient } from '@supabase/supabase-js';
+import type {Database, Profile} from '../types/supabase';
 
 interface AuthContextType {
-  session: AuthSession | null;
+  session: Session | null;
+  user: User | null;
   profile: Profile | null;
-  isLoading: boolean;
-  logout: () => Promise<void>;
-  supabase: typeof supabase;
+  supabase: SupabaseClient<Database>;
+  loading: boolean;
+  signOut: () => Promise<void>;
 }
 
-const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = React.useState<AuthSession | null>(null);
-  const [profile, setProfile] = React.useState<Profile | null>(null);
-  const [authLoading, setAuthLoading] = React.useState(true);
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Segédfüggvény a profil lekéréséhez
-  const getProfile = async (session: AuthSession): Promise<Profile | null> => {
+  const profileRef = useRef<Profile | null>(null);
+
+  // Kijelentkezés
+  const signOut = async () => {
     try {
-      const { data: userProfile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-
-      if (error || !userProfile) {
-        throw new Error(error?.message || "Profil nem található.");
-      }
-      return userProfile;
-
-    } catch (error) {
-      console.error("AuthContext Hiba (getProfile):", (error as Error).message);
+      setLoading(true);
       await supabase.auth.signOut();
-      return null;
+    } catch (error) {
+      console.error("SignOut error:", error);
+    } finally {
+      // State törlése
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      profileRef.current = null;
+      setLoading(false);
+      // LocalStorage takarítás (hogy ne ragadjon be)
+      localStorage.removeItem(`sb-${new URL(supabaseUrl).hostname.split('.')[0]}-auth-token`);
     }
   };
 
-
-  React.useEffect(() => {
-    setAuthLoading(true);
-
-    // 1. LÉPÉS: Kezdeti munkamenet ellenőrzése
-    const fetchInitialSession = async () => {
-      const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
       if (error) {
-        console.error("Hiba a kezdeti session lekérésekor:", error.message);
+        // Ha nincs profil (pl. törölve lett), kiléptetjük
+        if (error.code === 'PGRST116') {
+          await signOut();
+        }
+      } else {
+        setProfile(data);
+        profileRef.current = data;
       }
-
-      if (initialSession) {
-        const userProfile = await getProfile(initialSession);
-        setSession(initialSession);
-        setProfile(userProfile);
-      }
-      setAuthLoading(false);
-    };
-
-    fetchInitialSession();
-
-    // 2. LÉPÉS: Figyelő beállítása a VÁLTOZÁSOKRA
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
-
-        // --- A VÉGLEGES JAVÍTÁS ITT VAN ---
-
-        // Használjuk a setSession funkcionális frissítését,
-        // hogy megkapjuk a 'currentSession'-t anélkül,
-        // hogy a 'session'-t a useEffect függőségeihez adnánk.
-        setSession(currentSession => {
-
-          // 1. ESET: KIJELENTKEZÉS
-          // Ha nincs új session, kijelentkeztünk.
-          if (!newSession) {
-            setProfile(null);
-            return null;
-          }
-
-          // 2. ESET: FÜL-VÁLTÁS (TAB-SWITCH)
-          // Ha az új session ID-ja MEGEGYEZIK a jelenlegi session ID-jával,
-          // az azt jelenti, hogy ez csak egy háttér-frissítés (pl. fül-váltás).
-          // Ilyenkor csendben frissítjük a sessiont, de
-          // NEM indítunk globális töltést és NEM kérjük le újra a profilt.
-          if (currentSession && currentSession.user.id === newSession.user.id) {
-            return newSession; // Csendes frissítés
-          }
-
-          // 3. ESET: VALÓDI ÚJ BEJELENTKEZÉS
-          // Ha a session ID más (vagy eddig nem volt session),
-          // akkor ez egy valódi bejelentkezés.
-          // Indítjuk a globális töltést és lekérjük a profilt.
-          setAuthLoading(true);
-          getProfile(newSession).then((userProfile) => {
-            if (userProfile) {
-              setProfile(userProfile);
-              setAuthLoading(false);
-            } else {
-              // Ha a profil lekérése hibára futott, a getProfile()
-              // már kijelentkeztetett minket, így null-t kapunk.
-              setProfile(null);
-              setAuthLoading(false);
-            }
-          });
-
-          return newSession;
-        });
-      }
-    );
-
-    // Takarítás
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, []); // Az üres dependency array itt helyes
-
-  const logout = async () => {
-    await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Kritikus profil hiba:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    let mounted = true;
+
+    // 1. Induláskor
+    const initSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (mounted) {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      }
+    };
+
+    initSession();
+
+    // 2. Eseményfigyelő
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+
+      // JAVÍTÁS: setTimeout használata a deadlock elkerülésére!
+      // Ez hagyja, hogy a Supabase auth folyamat befejeződjön, mielőtt adatbázist hívunk.
+      setTimeout(async () => {
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          profileRef.current = null;
+          setLoading(false);
+          return;
+        }
+
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          setSession(session);
+          setUser(session?.user ?? null);
+
+          if (session?.user) {
+            // Csak ha még nincs profil, vagy más user lépett be
+            if (!profileRef.current || profileRef.current.id !== session.user.id) {
+              setLoading(true);
+              await fetchProfile(session.user.id);
+            }
+          } else {
+            setLoading(false);
+          }
+        }
+      }, 0);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const value = {
     session,
+    user,
     profile,
-    isLoading: authLoading,
-    logout,
-    supabase: supabase,
+    supabase,
+    loading,
+    signOut,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
-  const context = React.useContext(AuthContext);
-
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth kötelezően egy AuthProvider-en belül kell legyen");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-
   return context;
 }

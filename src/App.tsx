@@ -1,46 +1,59 @@
-import { Route, Routes } from "react-router-dom";
-import { HomePage } from "./pages/Home";
-import { SfsdLayout } from "./layouts/SfsdLayout";
-import { PenalCodePage } from "./pages/sfsd/PenalCode";
-import { DashboardPage } from "./pages/sfsd/DashboardPage";
-import { SzabalyzatPage } from "./pages/sfsd/SzabalyzatPage";
-import "./App.css";
+import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
+import {AuthProvider} from "@/context/AuthContext";
+import {Toaster} from "@/components/ui/sonner";
 
-import { McbLayout } from "./layouts/McbLayout";
-import { LoginPage } from "./pages/mcb/LoginPage";
-import { RegisterPage } from "./pages/mcb/RegisterPage";
-import { PendingApprovalPage } from "./pages/mcb/PendingApprovalPage";
-import { McbDashboard } from "./pages/mcb/McbDashboard";
-import { AdminPage } from "./pages/mcb/AdminPage";
-import { CaseDetailPage } from "./pages/mcb/CaseDetailPage";
+// Layout
+import {AppLayout} from "@/layouts/AppLayout";
+
+// Oldalak
+import {LoginPage} from "@/pages/auth/LoginPage";
+import {RegisterPage} from "@/pages/auth/RegisterPage";
+import {DashboardPage} from "@/pages/dashboard/DashboardPage";
+import {HrPage} from "@/pages/hr/HrPage"; // <-- ÚJ
+
+// Régi MCB (később majd ezt is szépítjük)
+import {McbDashboard} from "@/pages/mcb/McbDashboard";
+import {CaseDetailPage} from "@/pages/mcb/CaseDetailPage";
+import {ProfilePage} from "@/pages/profile/ProfilePage.tsx";
+import {LogisticsPage} from "@/pages/logistics/LogisticsPage.tsx";
+import {FinancePage} from "@/pages/logistics/FinancePage.tsx";
+import {ResourcesPage} from "@/pages/resources/ResourcesPage.tsx";
 
 function App() {
   return (
-    <Routes>
-      {/* Főoldal (Frakcióválasztó) */}
-      <Route path="/" element={<HomePage />} />
+    <BrowserRouter>
+      <AuthProvider>
+        <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased">
+          <Routes>
 
-      {/* SFSD Szekció (Layout-tal védve) */}
-      <Route path="/sfsd" element={<SfsdLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="penalcode" element={<PenalCodePage />} />
-        <Route path="szabalyzat" element={<SzabalyzatPage />} />
-      </Route>
+            {/* Publikus (Auth nélkül) */}
+            <Route path="/login" element={<LoginPage/>}/>
+            <Route path="/register" element={<RegisterPage/>}/>
 
-      {/* MCB Szekció */}
-      <Route path="/mcb/login" element={<LoginPage />} />
-      <Route path="/mcb/register" element={<RegisterPage />} />
+            {/* Védett Rendszer (AppLayout keretben) */}
+            <Route element={<AppLayout/>}>
+              <Route path="/dashboard" element={<DashboardPage/>}/>
+              <Route path="/hr" element={<HrPage/>}/>
 
-      {/* Védett MCB Rendszer (Layout-tal védve) */}
-      <Route path="/mcb" element={<McbLayout />}>
-        <Route index element={<McbDashboard />} />
-        <Route path="pending" element={<PendingApprovalPage />} />
-        <Route path="admin" element={<AdminPage />} />
-        {/* IDE KERÜL AZ ÚJ ÚTVONAL: */}
-        <Route path="case/:caseId" element={<CaseDetailPage />} />
-      </Route>
+              {/* MCB Al-rendszer (Ideiglenesen itt, később saját layoutja lehet vagy almenü) */}
+              <Route path="/mcb" element={<McbDashboard/>}/>
+              <Route path="/mcb/case/:caseId" element={<CaseDetailPage/>}/>
 
-    </Routes>
+              {/* További placeholder route-ok */}
+              <Route path="/logistics" element={<LogisticsPage/>}/>
+              <Route path="/finance" element={<FinancePage/>}/>
+              <Route path="/resources" element={<ResourcesPage/>}/>
+              <Route path="/profile" element={<ProfilePage/>}/>
+            </Route>
+
+            {/* Default Redirect */}
+            <Route path="/" element={<Navigate to="/dashboard" replace/>}/>
+
+          </Routes>
+          <Toaster position="top-right" theme="dark"/>
+        </div>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

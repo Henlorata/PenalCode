@@ -68,6 +68,9 @@ interface CaseDetailsData {
 type EvidenceWithUrl = CaseEvidence & { signedUrl: string };
 
 type CollaboratorDetail = CaseDetailsData['collaborators'][number];
+
+type EvidenceWithUrl = CaseEvidence & { signedUrl: string };
+
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "open":
@@ -91,6 +94,8 @@ export function CaseDetailPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
+  const [evidenceList, setEvidenceList] = React.useState<CaseEvidence[]>([]);
+
   const [editorContent, setEditorContent] = React.useState<PartialBlock[] | undefined>(undefined);
 
   const [evidence, setEvidence] = React.useState<CaseEvidence[]>([]);
@@ -106,9 +111,81 @@ export function CaseDetailPage() {
   const [targetStatus, setTargetStatus] = React.useState<CaseStatus | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
 
+  const [viewImage, setViewImage] = React.useState<EvidenceWithUrl | null>(null);
+  const [isImageViewerOpen, setIsImageViewerOpen] = React.useState(false);
+
   const leftHeaderRef = React.useRef<HTMLDivElement>(null);
   const contentCardRef = React.useRef<HTMLDivElement>(null);
   const [contentCardHeight, setContentCardHeight] = React.useState<string | number>('auto');
+
+  // --- Kép megnyitó segédfüggvény ---
+  const openEvidenceViewer = async (evidenceItem: CaseEvidence) => {
+    try {
+      const { data: urlData, error } = await supabase.storage
+        .from("case_evidence")
+        .createSignedUrl(evidenceItem.file_path, 3600);
+
+      if (error) throw error;
+
+      if (urlData?.signedUrl) {
+        setViewImage({ ...evidenceItem, signedUrl: urlData.signedUrl });
+        setIsImageViewerOpen(true);
+      } else {
+        toast.error("Nem sikerült betölteni a képet.");
+      }
+    } catch (error) {
+      console.error("Hiba a kép megnyitásakor:", error);
+      toast.error("Hiba történt a kép betöltésekor.");
+    }
+  };
+
+  // --- KATTINTÁS KEZELŐ (Csak az olvasó nézethez!) ---
+  const handleContentClick = async (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const link = target.closest("a");
+
+    // 1. Eset: Link (#evidence- vagy evidence://)
+    if (link) {
+      const href = link.getAttribute("href");
+      if (href && (href.startsWith("#evidence-") || href.startsWith("evidence://"))) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const evidenceId = href.replace("#evidence-", "").replace("evidence://", "");
+        const evidenceItem = evidenceList.find(ev => ev.id === evidenceId);
+
+        if (evidenceItem) {
+          openEvidenceViewer(evidenceItem);
+        } else {
+          toast.error("A hivatkozott bizonyíték már nem létezik.");
+        }
+        return;
+      }
+    }
+
+    // 2. Eset: Régi kép (IMG tag)
+    if (target.tagName === 'IMG') {
+      const imgSrc = (target as HTMLImageElement).src;
+      const pathMarker = "case_evidence/";
+      const pathIndex = imgSrc.indexOf(pathMarker);
+
+      if (pathIndex > -1) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const rawPath = imgSrc.substring(pathIndex + pathMarker.length).split('?')[0];
+        const filePath = decodeURIComponent(rawPath);
+
+        const evidenceItem = evidenceList.find(item => item.file_path === filePath);
+        if (evidenceItem) {
+          openEvidenceViewer(evidenceItem);
+        } else {
+          toast.error("A kép eredetije nem található az adatbázisban.");
+        }
+      }
+    }
+  };
+
 
   const fetchCaseDetails = React.useCallback(async () => {
     if (!caseId) {
@@ -152,6 +229,17 @@ export function CaseDetailPage() {
       setDetails(validData);
       setEditorContent(validData.caseDetails.case.body);
 
+      const { data: evidenceData, error: evidenceError } = await supabase
+        .from("case_evidence")
+        .select("*")
+        .eq("case_id", caseId);
+
+      if (evidenceError) {
+        console.error("Hiba a bizonyítékok betöltésekor:", evidenceError.message);
+      } else if (evidenceData) {
+        setEvidenceList(evidenceData);
+      }
+
     } catch (err) {
       const error = err as Error;
       console.error(error);
@@ -176,7 +264,7 @@ export function CaseDetailPage() {
         if (leftHeaderRef.current && contentCardRef.current) {
           const contentTopOffset = contentCardRef.current.getBoundingClientRect().top;
           const viewportHeight = window.innerHeight;
-          const bottomPadding = 32; // 2rem (p-8)
+          const bottomPadding = 32;
           const newHeight = viewportHeight - contentTopOffset - bottomPadding;
           setContentCardHeight(newHeight > 400 ? newHeight : 400);
         }
@@ -196,7 +284,6 @@ export function CaseDetailPage() {
       setContentCardHeight('auto');
     }
   }, [details, isLoading, activeView]);
-
 
   const handleEditorSave = async () => {
     if (!caseId || !tempEditorContent) return;
@@ -406,6 +493,8 @@ export function CaseDetailPage() {
               ref={contentCardRef}
               className="bg-slate-900 border-slate-700 text-white flex flex-col !py-0 !gap-0"
               style={{height: contentCardHeight}}
+              // CSAK AZ OLVASÓ KÁRTYÁN VAN KATTINTÁS KEZELÉS!
+              onClickCapture={handleContentClick}
             >
               <CardHeader className="p-6">
                 <h3 className="text-xl font-semibold">Akta Tartalma</h3>
@@ -528,6 +617,7 @@ export function CaseDetailPage() {
           <DialogHeader>
             <DialogTitle>Akta Szerkesztése: #{caseData.case_number}</DialogTitle>
           </DialogHeader>
+
           <div className="flex-1 -mx-4 min-h-0">
             <MantineProvider theme={mantineTheme} forceColorScheme="dark">
               <CaseEditor
@@ -543,6 +633,7 @@ export function CaseDetailPage() {
               />
             </MantineProvider>
           </div>
+
           <DialogFooterComponent className="">
             <Button variant="outline" onClick={handleEditorCancel} disabled={isSaving}>Mégse</Button>
             <Button onClick={handleEditorSave} disabled={isSaving}>
@@ -554,6 +645,28 @@ export function CaseDetailPage() {
               Mentés
             </Button>
           </DialogFooterComponent>
+        </DialogContent>
+      </Dialog>
+
+      {/* Képnézegető Modal */}
+      <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+        <DialogContent className="bg-slate-950 border-slate-800 text-white w-auto max-w-[95vw] h-auto max-h-[95vh] p-0 flex flex-col overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Kép Megtekintése</DialogTitle>
+          </DialogHeader>
+          <div className="relative flex items-center justify-center bg-black flex-1 min-h-0">
+            {viewImage && (
+              <img
+                src={viewImage.signedUrl}
+                alt="Bizonyíték"
+                className="max-w-full max-h-[85vh] w-auto h-auto object-contain"
+              />
+            )}
+          </div>
+          <div className="p-3 bg-slate-900 flex justify-between items-center flex-shrink-0">
+            <p className="font-medium text-sm">{viewImage?.file_name}</p>
+            <Button variant="outline" size="sm" onClick={() => setIsImageViewerOpen(false)}>Bezárás</Button>
+          </div>
         </DialogContent>
       </Dialog>
 

@@ -1,121 +1,44 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js'; // <-- FONTOS: Ezt az importot hozzáadjuk
+import { createClient } from '@supabase/supabase-js';
 
-// --- KÓD BEMÁSOLVA (KEZDET) ---
-// A 'supabase-admin.ts' tartalma ide lett másolva, hogy elkerüljük az import hibát
+// --- INLINE SETUP ---
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || '';
-
-console.log('--- update-role: modultöltés ---');
-console.log('Supabase URL (első 10 karakter):', supabaseUrl.substring(0, 10));
-
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  },
-  global: {
-    headers: {
-      Authorization: `Bearer ${supabaseServiceKey}`
-    }
-  }
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: { autoRefreshToken: false, persistSession: false }
 });
 
-console.log('--- update-role: supabaseAdmin kliens létrehozva ---');
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
-export const isUserAdmin = async (token: string): Promise<boolean | string> => {
-  console.log('--- update-role: isUserAdmin futtatása ---');
   try {
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+    // Az új struktúrának megfelelő paraméterek
+    const { userId, system_role, faction_rank, division } = req.body;
 
-    if (userError) {
-      console.error('isUserAdmin hiba (auth.getUser):', userError.message);
-      return `auth.getUser error: ${userError.message}`;
-    }
-    if (!user) {
-      console.warn('isUserAdmin hiba: Nincs felhasználó ehhez a tokenhez');
-      return "No user found for token";
-    }
-    console.log('isUserAdmin: Felhasználó azonosítva:', user.id);
+    if (!userId) return res.status(400).json({ error: 'User ID is required' });
 
-    const { data: profile, error: profileError } = await supabaseAdmin
+    // Update objektum összeállítása dinamikusan
+    const updates: any = {};
+    if (system_role) updates.system_role = system_role;
+    if (faction_rank) updates.faction_rank = faction_rank;
+    if (division) updates.division = division;
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update provided.' });
+    }
+
+    const { error } = await supabaseAdmin
       .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+      .update(updates)
+      .eq('id', userId);
 
-    if (profileError) {
-      console.error('isUserAdmin hiba (profiles.select):', profileError.message);
-      return `profiles.select error: ${profileError.message}`;
-    }
-    console.log('isUserAdmin: Profil lekérdezve:', profile);
+    if (error) throw error;
 
-    return profile && profile.role === 'lead_detective';
-
-  } catch (e: any) {
-    console.error('isUserAdmin GLOBÁLIS HIBA:', e.message);
-    return `isUserAdmin global catch block: ${e.message}`;
-  }
-};
-// --- KÓD BEMÁSOLVA (VÉGE) ---
-
-
-// A FŐ FUNKCIÓ (már használja a fenti, lokális kódot)
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-) {
-  console.log('--- update-role API hívás érkezett ---');
-  try {
-    if (req.method !== 'POST') {
-      console.warn('Rossz metódus:', req.method);
-      return res.status(405).json({ error: 'Method Not Allowed' });
-    }
-
-    const { targetUserId, newRole } = req.body;
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-      console.warn('Admin check hiba: Nincs token');
-      return res.status(401).json({ error: 'Unauthorized: No token provided.' });
-    }
-
-    console.log('Admin check indítása...');
-    const adminCheckResult = await isUserAdmin(token); // A fenti kódot hívja
-    console.log('Admin check eredmény:', adminCheckResult);
-
-    if (typeof adminCheckResult === 'string') {
-      console.warn('Admin check hiba:', adminCheckResult);
-      return res.status(401).json({ error: `Unauthorized: Admin check failed. Reason: ${adminCheckResult}` });
-    }
-
-    if (adminCheckResult === false) {
-      console.warn('Admin check hiba: A felhasználó nem admin');
-      return res.status(401).json({ error: 'Unauthorized: Csak admin végezheti el ezt a műveletet.' });
-    }
-
-    console.log('Admin check sikeres, update indítása...');
-    const { data, error } = await supabaseAdmin
-      .from('profiles')
-      .update({ role: newRole })
-      .eq('id', targetUserId)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Update hiba:', error.message);
-      throw error;
-    }
-
-    console.log('Update sikeres');
-    return res.status(200).json({ success: true, updatedProfile: data });
+    return res.status(200).json({ success: true });
 
   } catch (err) {
     const error = err as Error;
-    console.error('update-role GLOBÁLIS HIBA:', error.message);
-    return res.status(500).json({
-      error: "A server error occurred inside the update-role handler",
-      message: error.message
-    });
+    console.error("Update error:", error.message);
+    return res.status(500).json({ error: error.message });
   }
 }

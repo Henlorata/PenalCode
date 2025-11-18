@@ -1,5 +1,4 @@
 // FrakHub/src/pages/mcb/components/CaseEvidenceTab.tsx
-// (JAVÍTVA: A feltöltési útvonal (filePath) egyszerűsítve)
 
 import * as React from "react";
 import {useParams} from "react-router-dom";
@@ -12,7 +11,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
@@ -20,7 +18,6 @@ import {Loader2, Upload, AlertTriangle, Image as ImageIcon, Trash2, Search} from
 import {toast} from "sonner";
 import type {CaseEvidence} from "@/types/supabase";
 
-// Lokális típus kiterjesztése az aláírt URL-lel
 type EvidenceWithUrl = CaseEvidence & { signedUrl: string };
 
 export function CaseEvidenceTab() {
@@ -40,7 +37,6 @@ export function CaseEvidenceTab() {
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Bizonyítékok lekérése (Aláírt URL-ekkel)
   const fetchEvidence = React.useCallback(async () => {
     if (!caseId) return;
     setIsLoading(true);
@@ -57,12 +53,11 @@ export function CaseEvidenceTab() {
       return;
     }
 
-    // --- FIGYELEM: Ha a lekérés hibát dob, az RLS SELECT policy is hiányzik! ---
     const evidenceWithUrls = await Promise.all(
       data.map(async (item) => {
         const {data: urlData, error: urlError} = await supabase.storage
           .from("case_evidence")
-          .createSignedUrl(item.file_path, 3600); // 1 óráig érvényes
+          .createSignedUrl(item.file_path, 3600);
 
         if (urlError) {
           console.error("Signed URL hiba:", urlError.message, "Path:", item.file_path);
@@ -86,7 +81,6 @@ export function CaseEvidenceTab() {
     }
   };
 
-  // Feltöltés (JAVÍTVA)
   const handleUpload = async () => {
     if (!fileToUpload || !caseId || !profile) {
       toast.error("Nincs fájl kiválasztva vagy akta azonosító hiányzik.");
@@ -99,12 +93,7 @@ export function CaseEvidenceTab() {
     setIsUploading(true);
     const fileExt = fileToUpload.name.split('.').pop();
     const uniqueFileName = `${Date.now()}.${fileExt}`;
-
-    // --- JAVÍTÁS ITT ---
-    // Az elérési út most már csak: {caseId}/{fileName}
-    // A profile.id-t eltávolítottuk az útvonalból.
     const filePath = `${caseId}/${uniqueFileName}`;
-    // --- JAVÍTÁS VÉGE ---
 
     const {error: uploadError} = await supabase.storage
       .from("case_evidence")
@@ -116,13 +105,12 @@ export function CaseEvidenceTab() {
       return;
     }
 
-    // Az adatbázisba mentés változatlan, az tárolja a user_id-t
     const {error: dbError} = await supabase
       .from("case_evidence")
       .insert({
         case_id: caseId,
         user_id: profile.id,
-        file_path: filePath, // Itt már az új, egyszerűsített útvonalat mentjük
+        file_path: filePath,
         file_name: fileToUpload.name,
         file_type: fileToUpload.type,
         description: description || null,
@@ -131,18 +119,16 @@ export function CaseEvidenceTab() {
     setIsUploading(false);
     if (dbError) {
       toast.error("Hiba az adatbázis-bejegyzés mentésekor", {description: dbError.message});
-      // Sikertelen DB mentés esetén töröljük a feltöltött fájlt
       await supabase.storage.from("case_evidence").remove([filePath]);
     } else {
       toast.success("Bizonyíték sikeresen feltöltve!");
       setFileToUpload(null);
       setDescription("");
       if (fileInputRef.current) fileInputRef.current.value = "";
-      fetchEvidence(); // Frissítjük a listát
+      fetchEvidence();
     }
   };
 
-  // Törlés (Változatlan)
   const handleDelete = async (item: EvidenceWithUrl) => {
     setIsDeleting(item.id);
     const {error: storageError} = await supabase.storage
@@ -166,13 +152,11 @@ export function CaseEvidenceTab() {
     }
   };
 
-  // Kép megnyitása (Változatlan)
   const openImage = (item: EvidenceWithUrl) => {
     setSelectedImage(item);
     setIsImageOpen(true);
   };
 
-  // Tartalom renderelése (Grid) (Változatlan)
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -243,7 +227,6 @@ export function CaseEvidenceTab() {
     );
   };
 
-  // --- HTML (Változatlan) ---
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
       <div className="lg:col-span-1 lg:sticky lg:top-[5.5rem] space-y-6">
@@ -288,23 +271,29 @@ export function CaseEvidenceTab() {
         </Card>
       </div>
 
+      {/* JAVÍTÁS: Képnézegető Modal méretezése */}
       <Dialog open={isImageOpen} onOpenChange={setIsImageOpen}>
-        <DialogContent
-          className="bg-slate-900 border-slate-700 text-white w-[95vw] max-w-[95vw] h-[95vh] flex flex-col p-6">
-          <DialogHeader>
-            <DialogTitle>{selectedImage?.file_name}</DialogTitle>
-            <DialogDescription>{selectedImage?.description || "Nincs leírás."}</DialogDescription>
+        {/* max-w-none és h-auto/fit-content, hogy igazodjon a képhez */}
+        <DialogContent className="bg-slate-950 border-slate-800 text-white w-auto max-w-[95vw] h-auto max-h-[95vh] p-0 flex flex-col overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Kép Megtekintése</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 min-h-0 flex items-center justify-center">
+
+          <div className="relative flex items-center justify-center bg-black flex-1 min-h-0">
             <img
               src={selectedImage?.signedUrl}
               alt={selectedImage?.description || selectedImage?.file_name || "Bizonyíték"}
-              className="max-w-full max-h-full object-contain"
+              // max-h-[85vh] biztosítja, hogy maradjon hely a láblécnek
+              className="max-w-full max-h-[85vh] w-auto h-auto object-contain"
             />
           </div>
-          <DialogFooter className="pt-6">
+          <DialogFooter className="p-3 bg-slate-900 flex-shrink-0">
+            <div className="flex-1 text-left mr-4">
+              <p className="font-medium text-sm">{selectedImage?.file_name}</p>
+              {selectedImage?.description && <p className="text-xs text-slate-400">{selectedImage.description}</p>}
+            </div>
             <DialogClose asChild>
-              <Button variant="outline">Bezárás</Button>
+              <Button variant="outline" size="sm">Bezárás</Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
