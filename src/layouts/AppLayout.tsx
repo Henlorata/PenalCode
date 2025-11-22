@@ -1,5 +1,5 @@
 import {useState, useEffect, useCallback} from "react";
-import {Outlet, Link, useLocation, Navigate} from "react-router-dom";
+import {Outlet, Link, useLocation, Navigate, useNavigate} from "react-router-dom";
 import {useAuth} from "@/context/AuthContext";
 import {useSystemStatus} from "@/context/SystemStatusContext";
 import {LoadingScreen} from "@/components/ui/loading-screen";
@@ -30,6 +30,7 @@ export function AppLayout() {
   const {profile, signOut, loading, supabase, user} = useAuth();
   const {alertLevel} = useSystemStatus();
   const location = useLocation();
+  const navigate = useNavigate(); // Hook inicializálása a navigációhoz
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [unreadCount, setUnreadCount] = useState(0);
@@ -44,7 +45,7 @@ export function AppLayout() {
       .eq('is_read', false);
 
     if (!error) {
-      console.log("Értesítések frissítve:", count); // Debug log
+      console.log("Értesítések frissítve:", count);
       setUnreadCount(count || 0);
     }
   }, [user, supabase]);
@@ -52,7 +53,7 @@ export function AppLayout() {
   // 1. Kezdeti betöltés és navigáláskor frissítés
   useEffect(() => {
     fetchUnreadCount();
-  }, [fetchUnreadCount, location.pathname]); // Ha oldalt váltasz, is frissít
+  }, [fetchUnreadCount, location.pathname]);
 
   // 2. Realtime feliratkozás
   useEffect(() => {
@@ -69,7 +70,7 @@ export function AppLayout() {
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
-          console.log("Realtime esemény:", payload); // Debug log
+          console.log("Realtime esemény:", payload);
           // Kis késleltetés, hogy a DB update biztosan lefusson
           setTimeout(() => fetchUnreadCount(), 100);
         }
@@ -203,7 +204,7 @@ export function AppLayout() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-800"/>
-              <DropdownMenuItem onClick={() => window.location.href = '/profile'}
+              <DropdownMenuItem onClick={() => navigate('/profile')}
                                 className="cursor-pointer focus:bg-slate-800 focus:text-white">
                 <User className="mr-2 h-4 w-4"/> <span>Profil</span>
               </DropdownMenuItem>
