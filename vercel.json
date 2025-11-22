@@ -1,5 +1,11 @@
 {
   "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/((?!api/|.*\\..*|@vite|@react-refresh).*)",
+      "destination": "/index.html"
+    }
+  ],
   "crons": [
     {
       "path": "/api/cron/daily-cleanup",
