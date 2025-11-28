@@ -90,7 +90,7 @@ export function NewCaseDialog({ open, onOpenChange, onCaseCreated }: NewCaseDial
             <Label>Rövid Leírás (Összefoglaló)</Label>
             <Textarea
               placeholder="Rövid összefoglaló a listanézethez..."
-              className="bg-slate-950 border-slate-800 resize-none h-20 focus-visible:ring-yellow-600/50"
+              className="bg-slate-950 border-slate-800 resize-none h-20 focus-visible:ring-yellow-600/50 break-all"
               value={formData.description}
               onChange={e => setFormData({...formData, description: e.target.value})}
             />

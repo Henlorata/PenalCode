@@ -31,6 +31,7 @@ export interface Exam {
   passing_percentage: number;
   is_public: boolean;
   is_active: boolean;
+  allow_sharing: boolean;
   created_by?: string;
   created_at?: string;
   exam_questions?: ExamQuestion[];
@@ -54,6 +55,19 @@ export interface ExamSubmission {
     passing_percentage: number;
   };
   profiles?: {
+    full_name: string;
+    badge_number: string;
+  };
+}
+
+export interface ExamOverride {
+  id: string;
+  exam_id: string;
+  user_id: string;
+  access_type: 'allow' | 'deny';
+  created_by: string;
+  created_at: string;
+  profile?: {
     full_name: string;
     badge_number: string;
   };

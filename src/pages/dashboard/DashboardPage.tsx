@@ -24,6 +24,16 @@ import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 
 // Státusz definíciók
 const ALERT_LEVELS: Record<AlertLevelId, { label: string; color: string; icon: any }> = {
@@ -71,8 +81,7 @@ function NewAnnouncementDialog({open, onOpenChange, onSuccess}: {
         content: formData.content,
         type: formData.type as any,
         is_pinned: formData.is_pinned,
-        show_author: formData.show_author,
-        created_by: user?.id
+        created_by: user?.id // show_author már nincs a db sémában, de logikában kezelhetnénk
       });
 
       if (error) throw error;
@@ -129,7 +138,7 @@ function NewAnnouncementDialog({open, onOpenChange, onSuccess}: {
               placeholder="Írd ide a részleteket..."
               value={formData.content}
               onChange={e => setFormData({...formData, content: e.target.value})}
-              className="bg-slate-950 border-slate-800 h-24 resize-none"
+              className="bg-slate-950 border-slate-800 h-24 resize-none break-all"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -143,17 +152,6 @@ function NewAnnouncementDialog({open, onOpenChange, onSuccess}: {
               />
               <Label htmlFor="pinned" className="cursor-pointer text-sm text-slate-300">Rögzítés a lista tetején
                 (PIN)</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="showAuthor"
-                checked={!formData.show_author}
-                onChange={e => setFormData({...formData, show_author: !e.target.checked})}
-                className="rounded border-slate-800 bg-slate-950 text-yellow-500 focus:ring-yellow-500"
-              />
-              <Label htmlFor="showAuthor" className="cursor-pointer text-sm text-slate-300">Név elrejtése (Rang
-                kategória mutatása)</Label>
             </div>
           </div>
         </div>
@@ -183,18 +181,19 @@ export function DashboardPage() {
   const [isLoadingStats, setIsLoadingStats] = React.useState(true);
   const [isNewsDialogOpen, setIsNewsDialogOpen] = React.useState(false);
 
+  // DELETE CONFIRM STATE
+  const [deleteAlertOpen, setDeleteAlertOpen] = React.useState(false);
+  const [selectedNewsId, setSelectedNewsId] = React.useState<string | null>(null);
+
   const [lastUpdated, setLastUpdated] = React.useState<Date | null>(null);
-  const [tick, setTick] = React.useState(0);
 
   React.useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-      setTick(t => t + 1);
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Segédfüggvény a dátum frissítéséhez
   const updateLastUpdated = (newDateStr: string) => {
     const newDate = new Date(newDateStr);
     setLastUpdated(prev => (!prev || newDate > prev) ? newDate : prev);
@@ -211,11 +210,9 @@ export function DashboardPage() {
     if (data) {
       setAnnouncements(data);
       if (data.length > 0) {
-        // JAVÍTÁS: Nem csak az elsőt nézzük (mert az lehet egy régi pinned), hanem megkeressük a legfrissebbet
         const latestNews = data.reduce((latest, current) => {
           return new Date(current.created_at) > new Date(latest) ? current.created_at : latest;
         }, data[0].created_at);
-
         updateLastUpdated(latestNews);
       }
     }
@@ -282,35 +279,41 @@ export function DashboardPage() {
     toast.success(`Státusz átállítva: ${ALERT_LEVELS[newLevel as AlertLevelId].label}`);
   }
 
-  const handleDeleteNews = async (id: string) => {
-    if (!confirm("Biztosan törlöd ezt a hírt?")) return;
-    const {error} = await supabase.from('announcements').delete().eq('id', id);
-    if (error) toast.error("Nem sikerült törölni.");
-    else toast.success("Hír törölve.");
+  const confirmDelete = (id: string) => {
+    setSelectedNewsId(id);
+    setDeleteAlertOpen(true);
+  }
+
+  const handleDeleteNews = async () => {
+    if (!selectedNewsId) return;
+
+    const {error} = await supabase.from('announcements').delete().eq('id', selectedNewsId);
+
+    if (error) {
+      toast.error("Nem sikerült törölni.");
+    } else {
+      toast.success("Hír törölve.");
+      // Azonnali frissítés a state-ben is
+      setAnnouncements(prev => prev.filter(news => news.id !== selectedNewsId));
+    }
+    setDeleteAlertOpen(false);
+    setSelectedNewsId(null);
   };
 
   const renderAuthor = (news: any) => {
     if (!news.profiles) return <span className="text-slate-500">Rendszer</span>;
 
-    if (news.show_author) {
-      return (
-        <span className="text-slate-400 font-medium">
-                  {news.profiles.faction_rank} {news.profiles.full_name}
-              </span>
-      );
-    } else {
-      const rank = news.profiles.faction_rank;
+    const rank = news.profiles.faction_rank;
 
-      if (EXECUTIVE_RANKS.includes(rank)) {
-        return <span
-          className="text-red-400 font-bold tracking-wide text-[10px] uppercase border border-red-900/50 px-1.5 py-0.5 rounded bg-red-950/30">Executive / Command Staff</span>;
-      } else if (SUPERVISORY_RANKS.includes(rank)) {
-        return <span
-          className="text-green-400 font-bold tracking-wide text-[10px] uppercase border border-green-900/50 px-1.5 py-0.5 rounded bg-green-950/30">Supervisory Staff</span>;
-      } else {
-        return <span
-          className="text-yellow-500 font-bold tracking-wide text-[10px] uppercase border border-yellow-900/50 px-1.5 py-0.5 rounded bg-yellow-950/30">Vezetőség</span>;
-      }
+    if (EXECUTIVE_RANKS.includes(rank)) {
+      return <span
+        className="text-red-400 font-bold tracking-wide text-[10px] uppercase border border-red-900/50 px-1.5 py-0.5 rounded bg-red-950/30">Executive / Command Staff</span>;
+    } else if (SUPERVISORY_RANKS.includes(rank)) {
+      return <span
+        className="text-green-400 font-bold tracking-wide text-[10px] uppercase border border-green-900/50 px-1.5 py-0.5 rounded bg-green-950/30">Supervisory Staff</span>;
+    } else {
+      return <span
+        className="text-yellow-500 font-bold tracking-wide text-[10px] uppercase border border-yellow-900/50 px-1.5 py-0.5 rounded bg-yellow-950/30">Vezetőség</span>;
     }
   }
 
@@ -324,6 +327,24 @@ export function DashboardPage() {
     <div className="space-y-6 animate-in fade-in duration-500" style={themeStyle}>
 
       <NewAnnouncementDialog open={isNewsDialogOpen} onOpenChange={setIsNewsDialogOpen} onSuccess={fetchNews}/>
+
+      <AlertDialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
+        <AlertDialogContent className="bg-slate-900 border-slate-800 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hír törlése</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              Biztosan törölni szeretnéd ezt a hírt? Ez a művelet nem visszavonható.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-slate-700 hover:bg-slate-800 text-white">Mégse</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteNews}
+                               className="bg-red-600 hover:bg-red-700 text-white border-none">
+              Törlés
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* --- PARANCSNOKI SÁV --- */}
       <div
@@ -475,7 +496,7 @@ export function DashboardPage() {
                                     {formatDistanceToNow(new Date(action.created_at), {addSuffix: true, locale: hu})}
                                  </span>
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5 font-mono break-words">
+                        <p className="text-xs text-slate-400 mt-0.5 font-mono break-words whitespace-pre-wrap">
                           {action.action_type === 'ticket' ? 'BÍRSÁG: ' : action.action_type === 'arrest' ? 'LETARTÓZTATÁS: ' : ''}
                           {action.details}
                         </p>
@@ -514,23 +535,27 @@ export function DashboardPage() {
                   ) : (
                     announcements.map((news) => (
                       <div key={news.id}
-                           className={`pl-3 py-2 border-l-2 group relative ${news.type === 'alert' ? 'border-red-500 bg-red-500/5' : news.type === 'training' ? 'border-blue-500 bg-blue-500/5' : 'border-yellow-500 bg-yellow-500/5'}`}>
-                        <div className="flex justify-between items-start">
+                           className={`pl-3 py-2 border-l-2 group relative overflow-hidden ${news.type === 'alert' ? 'border-red-500 bg-red-500/5' : news.type === 'training' ? 'border-blue-500 bg-blue-500/5' : 'border-yellow-500 bg-yellow-500/5'}`}>
+
+                        <div className="flex justify-between items-start gap-2 max-w-full">
                           <h4
-                            className={`text-sm font-bold ${news.type === 'alert' ? 'text-red-200' : news.type === 'training' ? 'text-blue-200' : 'text-yellow-200'}`}>
+                            className={`text-sm font-bold break-all pr-6 ${news.type === 'alert' ? 'text-red-200' : news.type === 'training' ? 'text-blue-200' : 'text-yellow-200'}`}>
                             {news.is_pinned && <Pin className="inline w-3 h-3 mr-1 -mt-0.5 text-slate-400"/>}
                             {news.title}
                           </h4>
+
                           {isLeader && (
-                            <button onClick={() => handleDeleteNews(news.id)}
-                                    className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 transition-opacity absolute top-1 right-1">
+                            <button onClick={() => confirmDelete(news.id)}
+                                    className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 transition-opacity shrink-0 absolute top-1 right-1">
                               <Trash2 className="w-3 h-3"/>
                             </button>
                           )}
                         </div>
 
                         <p
-                          className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-pre-wrap">{news.content}</p>
+                          className="text-xs text-slate-400 mt-1 leading-relaxed whitespace-pre-wrap break-all w-full max-w-full">
+                          {news.content}
+                        </p>
 
                         <div
                           className="mt-2 flex flex-col md:flex-row justify-between items-start md:items-center text-[10px] gap-1">

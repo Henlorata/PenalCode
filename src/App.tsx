@@ -26,6 +26,7 @@ import {ExamHub} from "@/pages/exams/ExamHub.tsx";
 import {ExamEditor} from "@/pages/exams/ExamEditor.tsx";
 import {ExamGradingPage} from "@/pages/exams/grading/ExamGradingPage.tsx";
 import {ActiveExamAlert} from "@/components/ActiveExamAlert.tsx";
+import {OnboardingPage} from "@/pages/auth/OnboardingPage.tsx";
 
 function App() {
   return (
@@ -39,10 +40,11 @@ function App() {
               <Route path="/register" element={<RegisterPage/>}/>
 
               {/* PUBLIKUS VIZSGA ÚTVONAL (Layouton kívül) */}
-              <Route path="/exam/public/:examId" element={<PublicExamPage/>}/>
+              <Route path="/exam/public/:examId" element={<PublicExamPage />} />
 
               <Route element={<AppLayout/>}>
                 <Route path="/dashboard" element={<DashboardPage/>}/>
+                <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route path="/notifications" element={<NotificationsPage/>}/>
                 <Route path="/reports" element={<ReportGeneratorPage/>}/>
                 <Route path="/hr" element={<HrPage/>}/>
