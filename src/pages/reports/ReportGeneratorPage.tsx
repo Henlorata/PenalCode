@@ -355,7 +355,7 @@ ${formData.description}
                       </div>
 
                       <Textarea placeholder="Írd le részletesen az eseményeket, vagy használj sablont..."
-                                className="bg-slate-950 border-slate-700 min-h-[200px] text-sm leading-relaxed"
+                                className="bg-slate-950 border-slate-700 min-h-[200px] text-sm leading-relaxed break-all"
                                 value={formData.description}
                                 onChange={e => handleChange('description', e.target.value)}/>
                     </CardContent>

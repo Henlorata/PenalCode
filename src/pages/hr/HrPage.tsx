@@ -33,7 +33,6 @@ import {
   Crown,
   Star,
   Users,
-  Lock,
   CalendarClock, Award, ShieldCheck
 } from "lucide-react";
 import {
@@ -53,17 +52,51 @@ const QUALIFICATIONS: Qualification[] = ['SAHP', 'AB', 'MU', 'GW', 'FAB', 'SIB',
 const INVESTIGATOR_RANKS: InvestigatorRank[] = ['Investigator III.', 'Investigator II.', 'Investigator I.'];
 const OPERATOR_RANKS: OperatorRank[] = ['Operator III.', 'Operator II.', 'Operator I.'];
 
-const HIGH_COMMAND_RANKS = ['Commander', 'Deputy Commander', 'Captain III.', 'Captain II.', 'Captain I.', 'Lieutenant II.', 'Lieutenant I.'];
+// Részletes rang felosztás
+const EXECUTIVE_RANKS = ['Commander', 'Deputy Commander'];
+const COMMAND_RANKS = ['Captain III.', 'Captain II.', 'Captain I.', 'Lieutenant II.', 'Lieutenant I.'];
+// High Command = Executive + Command (a szűréshez)
+const HIGH_COMMAND_RANKS = [...EXECUTIVE_RANKS, ...COMMAND_RANKS];
+
 const SUPERVISORY_RANKS = ['Sergeant II.', 'Sergeant I.'];
 const CORPORAL_INDEX = FACTION_RANKS.indexOf('Corporal');
 
+// --- SEGÉDFÜGGVÉNYEK ---
+
+// Stílus és Címke meghatározása TSB speciális eseteivel
+const getDivisionStyleAndLabel = (division: string, rank: string) => {
+  // Ha NEM TSB, akkor a szokásos logika
+  if (division !== 'TSB') {
+    return {
+      label: division,
+      className: division === 'MCB' ? 'bg-blue-900/20 text-blue-300 border-blue-700/50' :
+        division === 'SEB' ? 'bg-red-900/20 text-red-300 border-red-700/50' :
+          'bg-slate-800 text-slate-400'
+    };
+  }
+
+  // Ha TSB, akkor rang alapján döntünk
+  if (EXECUTIVE_RANKS.includes(rank)) {
+    return {label: 'Executive Staff', className: 'bg-red-900/20 text-red-300 border-red-700/50'};
+  }
+  if (COMMAND_RANKS.includes(rank)) {
+    return {label: 'Command Staff', className: 'bg-yellow-900/20 text-yellow-300 border-yellow-700/50'};
+  }
+  if (SUPERVISORY_RANKS.includes(rank)) {
+    return {label: 'Supervisory Staff', className: 'bg-green-900/20 text-green-300 border-green-700/50'};
+  }
+
+  // Alap eset (Field Staff)
+  return {label: 'Field Staff', className: 'bg-slate-800 text-slate-400 border-slate-700'};
+};
+
 // --- EDIT DIALOG ---
-function EditUserDialog({user, open, onOpenChange, onUpdate, viewerRank, onKickRequest}: {
+function EditUserDialog({user, open, onOpenChange, onUpdate, canManage, onKickRequest}: {
   user: Profile | null,
   open: boolean,
   onOpenChange: (o: boolean) => void,
   onUpdate: () => void,
-  viewerRank: 'admin' | 'supervisor',
+  canManage: boolean,
   onKickRequest: () => void
 }) {
   const [loading, setLoading] = React.useState(false);
@@ -85,15 +118,14 @@ function EditUserDialog({user, open, onOpenChange, onUpdate, viewerRank, onKickR
 
   const isTargetProtected = React.useMemo(() => {
     if (!user) return true;
-    if (viewerRank === 'admin') return false;
+    // Ha nem vagyunk biztosak a jogkörben, a szerver úgyis visszadobja
     const userRankIndex = FACTION_RANKS.indexOf(user.faction_rank);
-    return userRankIndex < CORPORAL_INDEX;
-  }, [user, viewerRank]);
+    return userRankIndex < CORPORAL_INDEX; // Csak a magas rangúakat védjük a sima supervisortól
+  }, [user]);
 
   const handleSave = async () => {
     if (!user) return;
-    if (isTargetProtected && viewerRank !== 'admin') return toast.error("Nincs jogosultságod.");
-
+    // Extra kliens oldali védelem, de a szerver a döntő
     setLoading(true);
     try {
       const response = await fetch('/api/admin/update-role', {
@@ -112,22 +144,32 @@ function EditUserDialog({user, open, onOpenChange, onUpdate, viewerRank, onKickR
     }
   };
 
-  const availableRanks = React.useMemo(() => {
-    if (viewerRank === 'admin') return FACTION_RANKS;
-    return FACTION_RANKS.slice(CORPORAL_INDEX);
-  }, [viewerRank]);
+  const availableRanks = FACTION_RANKS; // Minden rang elérhető a listában, a szerver validál
 
   const toggleQual = (q: Qualification) => {
     const current = formData.qualifications || [];
     setFormData({...formData, qualifications: current.includes(q) ? current.filter(x => x !== q) : [...current, q]});
   };
 
+  // Division Commander logika: Ha bejelölöd, megkapja a sima kvalifikációt is
   const toggleCommandedDivision = (q: Qualification) => {
-    const current = formData.commanded_divisions || [];
-    setFormData({
-      ...formData,
-      commanded_divisions: current.includes(q) ? current.filter(x => x !== q) : [...current, q]
-    });
+    const currentCmd = formData.commanded_divisions || [];
+    const currentQual = formData.qualifications || [];
+
+    if (currentCmd.includes(q)) {
+      // Levétel
+      setFormData({
+        ...formData,
+        commanded_divisions: currentCmd.filter(x => x !== q)
+      });
+    } else {
+      // Hozzáadás + Sima kvalifikáció hozzáadása is
+      setFormData({
+        ...formData,
+        commanded_divisions: [...currentCmd, q],
+        qualifications: currentQual.includes(q) ? currentQual : [...currentQual, q]
+      });
+    }
   };
 
   if (!user) return null;
@@ -136,9 +178,7 @@ function EditUserDialog({user, open, onOpenChange, onUpdate, viewerRank, onKickR
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">Adatlap
-            Kezelése {isTargetProtected && viewerRank !== 'admin' &&
-              <Lock className="w-4 h-4 text-red-500"/>}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">Adatlap Kezelése</DialogTitle>
           <DialogDescription>{user.full_name} [#{user.badge_number}]</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
@@ -146,11 +186,12 @@ function EditUserDialog({user, open, onOpenChange, onUpdate, viewerRank, onKickR
             <Label>Frakció Rang</Label>
             <Select value={formData.faction_rank}
                     onValueChange={(val: any) => setFormData({...formData, faction_rank: val})}
-                    disabled={isTargetProtected && viewerRank !== 'admin'}>
+                    disabled={!canManage}>
               <SelectTrigger
                 className="bg-slate-950 border-slate-700 disabled:opacity-50"><SelectValue/></SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 text-white max-h-[300px]">{availableRanks.map(r =>
-                <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+              <SelectContent className="bg-slate-900 border-slate-800 text-white max-h-[300px]">
+                {availableRanks.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+              </SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -159,12 +200,22 @@ function EditUserDialog({user, open, onOpenChange, onUpdate, viewerRank, onKickR
               <Select value={formData.division} onValueChange={(val: any) => setFormData({
                 ...formData,
                 division: val,
-                division_rank: val === 'TSB' ? null : formData.division_rank
-              })} disabled={isTargetProtected && viewerRank !== 'admin'}>
+                division_rank: val === 'TSB' ? null : formData.division_rank,
+                is_bureau_commander: val === 'TSB' ? false : formData.is_bureau_commander // TSB-nél kivesszük a Bureau Commandert
+              })} disabled={!canManage}>
                 <SelectTrigger
                   className="bg-slate-950 border-slate-700 disabled:opacity-50"><SelectValue/></SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-white">{DIVISIONS.map(d => <SelectItem
-                  key={d} value={d}>{d === 'TSB' ? 'Field Staff' : d}</SelectItem>)}</SelectContent>
+                <SelectContent className="bg-slate-900 border-slate-800 text-white">
+                  {DIVISIONS.map(d => {
+                    // A lista megjelenítésénél a kiválasztott rang alapján döntjük el a TSB nevét
+                    let label = d;
+                    if (d === 'TSB' && formData.faction_rank) {
+                      const style = getDivisionStyleAndLabel('TSB', formData.faction_rank);
+                      label = style.label;
+                    }
+                    return <SelectItem key={d} value={d}>{label}</SelectItem>;
+                  })}
+                </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
@@ -172,40 +223,50 @@ function EditUserDialog({user, open, onOpenChange, onUpdate, viewerRank, onKickR
               <Select value={formData.division_rank || "none"} onValueChange={(val) => setFormData({
                 ...formData,
                 division_rank: val === "none" ? null : val as any
-              })} disabled={formData.division === 'TSB' || (isTargetProtected && viewerRank !== 'admin')}>
+              })} disabled={formData.division === 'TSB' || !canManage}>
                 <SelectTrigger className="bg-slate-950 border-slate-700 disabled:opacity-50"><SelectValue
                   placeholder="Nincs"/></SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-white"><SelectItem
-                  value="none">Nincs</SelectItem>{formData.division === 'MCB' && INVESTIGATOR_RANKS.map(r => <SelectItem
-                  key={r} value={r}>{r}</SelectItem>)}{formData.division === 'SEB' && OPERATOR_RANKS.map(r =>
-                  <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                <SelectContent className="bg-slate-900 border-slate-800 text-white">
+                  <SelectItem value="none">Nincs</SelectItem>
+                  {formData.division === 'MCB' && INVESTIGATOR_RANKS.map(r => <SelectItem key={r}
+                                                                                          value={r}>{r}</SelectItem>)}
+                  {formData.division === 'SEB' && OPERATOR_RANKS.map(r => <SelectItem key={r}
+                                                                                      value={r}>{r}</SelectItem>)}
+                </SelectContent>
               </Select>
             </div>
           </div>
 
-          {viewerRank === 'admin' && (
+          {canManage && (
             <div className="p-4 border border-yellow-600/30 rounded-lg bg-yellow-950/10 space-y-4">
               <h4 className="text-xs font-bold text-yellow-500 uppercase tracking-widest flex items-center gap-2"><Crown
                 className="w-3 h-3"/> Vezetői Kinevezések</h4>
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5"><Label className="text-base font-medium text-slate-200 cursor-pointer"
-                                                    onClick={() => setFormData({
-                                                      ...formData,
-                                                      is_bureau_manager: !formData.is_bureau_manager
-                                                    })}>Bureau Manager</Label><p
-                  className="text-xs text-slate-400">Minden osztály és divízió felügyelete.</p></div>
+                <div className="space-y-0.5">
+                  <Label className="text-base font-medium text-slate-200 cursor-pointer"
+                         onClick={() => setFormData({...formData, is_bureau_manager: !formData.is_bureau_manager})}>Bureau
+                    Manager</Label>
+                  <p className="text-xs text-slate-400">Minden osztály és divízió felügyelete.</p>
+                </div>
                 <Switch checked={formData.is_bureau_manager}
                         onCheckedChange={(checked) => setFormData({...formData, is_bureau_manager: checked})}/>
               </div>
-              <div className="flex items-center justify-between border-t border-white/5 pt-3">
-                <div className="space-y-0.5"><Label className="text-base font-medium text-slate-200 cursor-pointer"
-                                                    onClick={() => setFormData({
-                                                      ...formData,
-                                                      is_bureau_commander: !formData.is_bureau_commander
-                                                    })}>Bureau Commander</Label><p className="text-xs text-slate-400">A
-                  jelenlegi osztály ({formData.division}) parancsnoka.</p></div>
-                <Switch checked={formData.is_bureau_commander}
-                        onCheckedChange={(checked) => setFormData({...formData, is_bureau_commander: checked})}/>
+              <div
+                className={`flex items-center justify-between border-t border-white/5 pt-3 ${formData.division === 'TSB' ? 'opacity-50 grayscale' : ''}`}>
+                <div className="space-y-0.5">
+                  <Label className="text-base font-medium text-slate-200 cursor-pointer"
+                         onClick={() => formData.division !== 'TSB' && setFormData({
+                           ...formData,
+                           is_bureau_commander: !formData.is_bureau_commander
+                         })}>Bureau Commander</Label>
+                  <p className="text-xs text-slate-400">A jelenlegi osztály ({formData.division}) parancsnoka. (TSB-nél
+                    nem elérhető)</p>
+                </div>
+                <Switch
+                  checked={formData.is_bureau_commander}
+                  onCheckedChange={(checked) => setFormData({...formData, is_bureau_commander: checked})}
+                  disabled={formData.division === 'TSB'}
+                />
               </div>
               <div className="border-t border-white/5 pt-3 space-y-2">
                 <Label className="text-base font-medium text-slate-200">Division Commander</Label>
@@ -224,7 +285,7 @@ function EditUserDialog({user, open, onOpenChange, onUpdate, viewerRank, onKickR
           <div className="space-y-2">
             <Label>Képesítések</Label>
             <div
-              className={`flex flex-wrap gap-2 p-3 bg-slate-950 border border-slate-700 rounded-lg ${(isTargetProtected && viewerRank !== 'admin') ? 'opacity-50 pointer-events-none' : ''}`}>
+              className={`flex flex-wrap gap-2 p-3 bg-slate-950 border border-slate-700 rounded-lg ${!canManage ? 'opacity-50 pointer-events-none' : ''}`}>
               {QUALIFICATIONS.map(q => (
                 <Badge key={q} variant={formData.qualifications?.includes(q) ? "default" : "outline"}
                        className="cursor-pointer select-none hover:bg-yellow-700"
@@ -233,12 +294,19 @@ function EditUserDialog({user, open, onOpenChange, onUpdate, viewerRank, onKickR
           </div>
         </div>
         <DialogFooter className="flex justify-between gap-2">
-          <Button type="button" variant="destructive" onClick={onKickRequest}
-                  disabled={loading || (isTargetProtected && viewerRank !== 'admin')}><Trash2
-            className="w-4 h-4 mr-2"/> Elbocsátás</Button>
-          <Button onClick={handleSave} disabled={loading || (isTargetProtected && viewerRank !== 'admin')}
-                  className="bg-yellow-600 text-black hover:bg-yellow-700"><CheckCircle2
-            className="w-4 h-4 mr-2"/> Mentés</Button>
+          {canManage && (
+            <Button type="button" variant="destructive" onClick={onKickRequest} disabled={loading}><Trash2
+              className="w-4 h-4 mr-2"/> Elbocsátás</Button>
+          )}
+          <div className={!canManage ? "w-full flex justify-end" : ""}>
+            {canManage ? (
+              <Button onClick={handleSave} disabled={loading}
+                      className="bg-yellow-600 text-black hover:bg-yellow-700"><CheckCircle2
+                className="w-4 h-4 mr-2"/> Mentés</Button>
+            ) : (
+              <Button onClick={() => onOpenChange(false)} variant="outline">Bezárás</Button>
+            )}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -246,7 +314,7 @@ function EditUserDialog({user, open, onOpenChange, onUpdate, viewerRank, onKickR
 }
 
 // --- LISTA KOMPONENS ---
-function StaffSection({title, icon: Icon, users, colorClass, onEdit}: any) {
+function StaffSection({title, icon: Icon, users, colorClass, onEdit, canManage}: any) {
   if (users.length === 0) return null;
 
   return (
@@ -272,6 +340,9 @@ function StaffSection({title, icon: Icon, users, colorClass, onEdit}: any) {
           <TableBody>
             {users.map((user: any) => {
               const daysInRank = user.last_promotion_date ? differenceInDays(new Date(), new Date(user.last_promotion_date)) : differenceInDays(new Date(), new Date(user.created_at));
+
+              // Badge stílus kiszámítása
+              const badgeInfo = getDivisionStyleAndLabel(user.division, user.faction_rank);
 
               return (
                 <TableRow key={user.id} className="border-white/5 hover:bg-white/5 group transition-colors">
@@ -310,11 +381,22 @@ function StaffSection({title, icon: Icon, users, colorClass, onEdit}: any) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary"
-                           className={cn("border border-white/10", user.division === 'MCB' ? 'bg-blue-900/20 text-blue-300' : user.division === 'SEB' ? 'bg-red-900/20 text-red-300' : 'bg-slate-800 text-slate-400')}>
-                      {user.division === 'TSB' ? 'Field Staff' : user.division}
-                      {user.division_rank && ` • ${user.division_rank.split(' ')[0]}`}
-                    </Badge>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Badge variant="secondary"
+                                 className={cn("border border-white/10 cursor-help", badgeInfo.className)}>
+                            {badgeInfo.label}
+                          </Badge>
+                        </TooltipTrigger>
+                        {/* Tooltip csak akkor, ha van alosztály rang */}
+                        {user.division_rank && (
+                          <TooltipContent>
+                            <p>Rang: {user.division_rank}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 flex-wrap">
@@ -325,7 +407,9 @@ function StaffSection({title, icon: Icon, users, colorClass, onEdit}: any) {
                   <TableCell className="text-right">
                     <Button size="sm" variant="ghost"
                             className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/10 hover:text-yellow-500"
-                            onClick={() => onEdit(user)}><UserCog className="w-4 h-4"/></Button>
+                            onClick={() => onEdit(user)}>
+                      {canManage ? <UserCog className="w-4 h-4"/> : <Search className="w-4 h-4"/>}
+                    </Button>
                   </TableCell>
                 </TableRow>
               );
@@ -370,11 +454,9 @@ export function HrPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  // Pending Action (Elfogadás/Elutasítás)
   const handlePendingAction = async (userId: string, action: 'approve' | 'reject') => {
     try {
       const endpoint = action === 'approve' ? '/api/admin/update-role' : '/api/admin/delete-user';
-      // JAVÍTÁS: Nem küldünk system_role-t, a backend kiszámolja a rangból
       const body = action === 'approve' ? {userId} : {userId};
 
       const response = await fetch(endpoint, {
@@ -390,7 +472,6 @@ export function HrPage() {
     }
   };
 
-  // Végleges kirúgás (Confirm után)
   const confirmKick = async () => {
     if (!userToKick) return;
     try {
@@ -421,7 +502,10 @@ export function HrPage() {
   const fieldUsers = filteredUsers.filter(u => !HIGH_COMMAND_RANKS.includes(u.faction_rank) && !SUPERVISORY_RANKS.includes(u.faction_rank));
   const pendingUsers = users.filter(u => u.system_role === 'pending');
 
-  const viewerRank = profile?.system_role === 'admin' ? 'admin' : 'supervisor';
+  // Jogosultság ellenőrzése: Admin vagy Supervisor szerkeszthet
+  const canManage = profile?.system_role === 'admin' || profile?.system_role === 'supervisor';
+  // TGF gombot csak admin láthatja
+  const canManageRecruitment = profile?.system_role === 'admin';
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto animate-in fade-in duration-500 pb-10">
@@ -450,7 +534,7 @@ export function HrPage() {
         open={!!editingUser}
         onOpenChange={(o) => !o && setEditingUser(null)}
         onUpdate={fetchUsers}
-        viewerRank={viewerRank}
+        canManage={canManage}
         onKickRequest={() => {
           setUserToKick(editingUser);
           setIsKickAlertOpen(true);
@@ -463,7 +547,7 @@ export function HrPage() {
           <p className="text-slate-400">Teljes állomány nyilvántartás és kezelés.</p>
         </div>
         <div className="flex items-center gap-4">
-          {viewerRank === 'admin' && (
+          {canManageRecruitment && (
             <div className="flex items-center gap-3 bg-slate-900 p-2 px-4 rounded-full border border-slate-800">
                <span className={`text-xs font-bold uppercase ${recruitmentOpen ? 'text-green-500' : 'text-red-500'}`}>
                  {recruitmentOpen ? 'TGF Nyitva' : 'Létszámstop'}
@@ -483,8 +567,8 @@ export function HrPage() {
         </div>
       </div>
 
-      {/* PENDING USERS */}
-      {pendingUsers.length > 0 && (
+      {/* PENDING USERS - Csak ha van jogosultság */}
+      {canManage && pendingUsers.length > 0 && (
         <div className="bg-yellow-950/20 border border-yellow-600/30 rounded-xl p-6 animate-pulse-border">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-yellow-600/20 rounded-lg text-yellow-500"><UserPlus className="w-6 h-6"/></div>
@@ -515,14 +599,14 @@ export function HrPage() {
           className="w-10 h-10 animate-spin mb-3 text-yellow-600"/><p>Állomány betöltése...</p></div>
       ) : (
         <>
-          <StaffSection title="Vezérkar (High Command)" icon={Crown} users={highCommandUsers}
+          <StaffSection title="Vezérkar (Executive / Command Staff)" icon={Crown} users={highCommandUsers}
                         colorClass="border-yellow-600/40 shadow-yellow-900/10" onEdit={setEditingUser}
-                        viewerRank={viewerRank}/>
+                        canManage={canManage}/>
           <StaffSection title="Vezetőség (Supervisory Staff)" icon={Star} users={supervisoryUsers}
                         colorClass="border-green-600/30 shadow-green-900/5" onEdit={setEditingUser}
-                        viewerRank={viewerRank}/>
+                        canManage={canManage}/>
           <StaffSection title="Állomány (Field Staff)" icon={Users} users={fieldUsers} colorClass="border-slate-800"
-                        onEdit={setEditingUser} viewerRank={viewerRank}/>
+                        onEdit={setEditingUser} canManage={canManage}/>
         </>
       )}
     </div>

@@ -1,360 +1,490 @@
-import {useEffect, useState} from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import {useEffect, useState, useMemo} from "react";
+import {useParams, useNavigate} from "react-router-dom";
 import {useAuth} from "@/context/AuthContext";
-import {Card, CardContent, CardHeader} from "@/components/ui/card";
+import {Card, CardContent, CardHeader, CardTitle, CardDescription} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
 import {Badge} from "@/components/ui/badge";
+import {Textarea} from "@/components/ui/textarea";
+import {Switch} from "@/components/ui/switch";
+import {Label} from "@/components/ui/label";
+import {Input} from "@/components/ui/input";
+import {Separator} from "@/components/ui/separator";
 import {toast} from "sonner";
-import {ArrowLeft, Save, CheckSquare, Type, AlertTriangle, CalendarClock} from "lucide-react";
-import {canGradeExam} from "@/lib/utils";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Loader2, CheckCircle2, XCircle, ArrowLeft, User, Clock, ShieldAlert,
+  ChevronLeft, ChevronRight, Eye, Target, Bot, PenLine
+} from "lucide-react";
+import type {ExamSubmission} from "@/types/exams";
+import {formatDistanceToNow} from "date-fns";
+import {hu} from "date-fns/locale";
+
+// Score Ring Component
+const ScoreRing = ({score, max, percent}: { score: number, max: number, percent: number }) => {
+  const radius = 36;
+  const stroke = 5;
+  const normalizedRadius = radius - stroke * 2;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (percent / 100) * circumference;
+  const color = percent >= 80 ? 'text-green-500' : percent >= 60 ? 'text-yellow-500' : 'text-red-500';
+
+  return (
+    <div className="relative flex items-center justify-center">
+      <svg height={radius * 2} width={radius * 2} className="rotate-[-90deg]">
+        <circle stroke="currentColor" fill="transparent" strokeWidth={stroke} r={normalizedRadius} cx={radius}
+                cy={radius} className="text-slate-800"/>
+        <circle stroke="currentColor" fill="transparent" strokeWidth={stroke}
+                strokeDasharray={circumference + ' ' + circumference} style={{strokeDashoffset}} strokeLinecap="round"
+                r={normalizedRadius} cx={radius} cy={radius}
+                className={`${color} transition-all duration-1000 ease-out`}/>
+      </svg>
+      <div className="absolute flex flex-col items-center">
+        <span className={`text-sm font-bold ${color}`}>{Math.round(percent)}%</span>
+        <span className="text-[10px] text-slate-500">{score}/{max}</span>
+      </div>
+    </div>
+  );
+};
 
 export function ExamGradingPage() {
-  const {supabase, profile} = useAuth();
-  const navigate = useNavigate();
   const {submissionId} = useParams();
+  const {supabase, profile, user} = useAuth();
+  const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
-  const [submission, setSubmission] = useState<any>(null);
-  const [exam, setExam] = useState<any>(null);
+  const [submission, setSubmission] = useState<ExamSubmission | null>(null);
+  const [answers, setAnswers] = useState<any[]>([]);
   const [questions, setQuestions] = useState<any[]>([]);
-  const [studentAnswers, setStudentAnswers] = useState<any[]>([]);
-  const [grades, setGrades] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
 
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [retryDate, setRetryDate] = useState<string>("");
+  // Javítás state-ek
+  const [gradingNotes, setGradingNotes] = useState("");
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Manuális pontozás state: most már stringet is tárolhat ideiglenesen a szerkesztéshez
+  const [manualPoints, setManualPoints] = useState<Record<string, string | number>>({});
+
+  // Lapozás
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    if (!profile || !submissionId) return;
-
     const fetchData = async () => {
+      if (!submissionId) return;
       setLoading(true);
       try {
-        const {data: sub, error: subError} = await supabase
+        const {data: subData, error: subError} = await supabase
           .from('exam_submissions')
-          .select(`*, exams (*), profiles:user_id (full_name, badge_number)`)
+          .select(`*, exams (title, passing_percentage, exam_questions (id, question_text, question_type, points, order_index, page_number, exam_options (id, option_text, is_correct)))`)
           .eq('id', submissionId)
           .single();
 
         if (subError) throw subError;
 
-        if (!canGradeExam(profile, sub.exams)) {
-          toast.error("Nincs jogosultságod javítani ezt a vizsgát.");
-          navigate('/exams');
-          return;
-        }
-
-        setSubmission(sub);
-        setExam(sub.exams);
-
-        const {data: qs, error: qError} = await supabase
-          .from('exam_questions')
-          .select(`*, exam_options (*)`)
-          .eq('exam_id', sub.exam_id)
-          .order('page_number', {ascending: true})
-          .order('order_index', {ascending: true});
-
-        if (qError) throw qError;
-        setQuestions(qs);
-
-        const {data: ans, error: ansError} = await supabase
-          .from('exam_answers')
-          .select('*')
-          .eq('submission_id', submissionId);
-
+        const {
+          data: ansData,
+          error: ansError
+        } = await supabase.from('exam_answers').select('*').eq('submission_id', submissionId);
         if (ansError) throw ansError;
-        setStudentAnswers(ans);
 
-        // Auto-Grading
-        const initialGrades: Record<string, number> = {};
-        qs.forEach((q: any) => {
-          const studentAns = ans.find((a: any) => a.question_id === q.id);
-          if (studentAns?.points_awarded !== null && studentAns?.points_awarded !== undefined) {
-            initialGrades[q.id] = studentAns.points_awarded;
-          } else {
-            if (q.question_type === 'single_choice') {
-              const selectedOptId = studentAns?.selected_option_ids?.[0];
-              const correctOpt = q.exam_options.find((o: any) => o.is_correct);
-              initialGrades[q.id] = (selectedOptId === correctOpt?.id) ? q.points : 0;
-            } else if (q.question_type === 'multiple_choice') {
-              const selectedIds = studentAns?.selected_option_ids || [];
-              const correctIds = q.exam_options.filter((o: any) => o.is_correct).map((o: any) => o.id);
-              const isPerfect = selectedIds.length === correctIds.length && selectedIds.every((id: string) => correctIds.includes(id));
-              initialGrades[q.id] = isPerfect ? q.points : 0;
-            } else {
-              initialGrades[q.id] = 0;
-            }
-          }
-        });
-        setGrades(initialGrades);
+        setSubmission(subData as any);
+        setAnswers(ansData || []);
+        setGradingNotes(subData.grading_notes || "");
+        setFeedbackVisible(subData.feedback_visible || false);
 
-      } catch (error: any) {
-        console.error(error);
-        toast.error("Hiba: " + error.message);
-        navigate('/exams');
+        // Kérdések rendezése
+        const sortedQuestions = (subData.exams as any).exam_questions.sort((a: any, b: any) => a.order_index - b.order_index);
+        setQuestions(sortedQuestions);
+
+      } catch (err: any) {
+        console.error(err);
+        toast.error("Hiba: " + err.message);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
-  }, [submissionId, profile, navigate, supabase]);
+  }, [submissionId, supabase]);
 
-  const handleScoreChange = (questionId: string, points: number) => {
-    setGrades(prev => ({...prev, [questionId]: points}));
-  };
+  // Pontszámítás (Auto + Manuális)
+  const {score, maxScore, questionStats} = useMemo(() => {
+    let currentScore = 0;
+    let totalMax = 0;
+    const stats: any[] = [];
 
-  const calculateTotal = () => Object.values(grades).reduce((a, b) => a + b, 0);
-  const getMaxScore = () => questions.reduce((acc, q) => acc + q.points, 0);
+    questions.forEach((q) => {
+      totalMax += q.points;
+      const userAns = answers.find(a => a.question_id === q.id);
+      let autoPoints = 0;
+      let isCorrect = false;
 
-  const handleSaveGrading = async () => {
-    const totalScore = calculateTotal();
-    const maxScore = getMaxScore();
-    const percentage = Math.round((totalScore / maxScore) * 100);
-    const isPassed = percentage >= (exam.passing_percentage || 80);
-
-    setLoading(true);
-    try {
-      for (const q of questions) {
-        const points = grades[q.id] || 0;
-        await supabase
-          .from('exam_answers')
-          .update({points_awarded: points})
-          .eq('submission_id', submissionId)
-          .eq('question_id', q.id);
-      }
-
-      const updatePayload: any = {
-        status: isPassed ? 'passed' : 'failed',
-        total_score: totalScore,
-        graded_by: profile?.id
-      };
-
-      if (!isPassed && retryDate) {
-        updatePayload.retry_allowed_at = new Date(retryDate).toISOString();
-      } else {
-        updatePayload.retry_allowed_at = null;
-      }
-
-      const {error} = await supabase.from('exam_submissions').update(updatePayload).eq('id', submissionId);
-      if (error) throw error;
-
-      if (submission.user_id) {
-        let msg = `Az eredményed: ${percentage}% (${isPassed ? 'SIKERES' : 'SIKERTELEN'}).`;
-        if (!isPassed && retryDate) {
-          msg += ` Újrapróbálkozhatsz ekkor: ${new Date(retryDate).toLocaleString('hu-HU')}`;
+      // 1. Automata pontozás számítása
+      if (userAns) {
+        if (q.question_type === 'single_choice') {
+          const correctOpt = q.exam_options.find((o: any) => o.is_correct);
+          if (correctOpt && userAns.selected_option_ids?.includes(correctOpt.id)) {
+            autoPoints = q.points;
+            isCorrect = true;
+          }
+        } else if (q.question_type === 'multiple_choice') {
+          const correctIds = q.exam_options.filter((o: any) => o.is_correct).map((o: any) => o.id);
+          const userIds = userAns.selected_option_ids || [];
+          const allCorrectSelected = correctIds.every((id: any) => userIds.includes(id));
+          const noWrongSelected = userIds.every((id: any) => correctIds.includes(id));
+          if (allCorrectSelected && noWrongSelected) {
+            autoPoints = q.points;
+            isCorrect = true;
+          }
         }
-        await supabase.from('notifications').insert({
-          user_id: submission.user_id,
-          title: `Vizsga Értékelve: ${exam.title}`,
-          message: msg,
-          type: isPassed ? 'success' : 'alert',
-          link: '/exams'
-        });
       }
 
-      toast.success("Értékelés sikeresen mentve!");
-      navigate('/exams');
+      // 2. Végső pontszám meghatározása (Kézi felülbírálattal)
+      let finalPoints = autoPoints;
 
-    } catch (error: any) {
-      console.error(error);
-      toast.error("Hiba a mentéskor: " + error.message);
-    } finally {
-      setLoading(false);
-      setIsConfirmOpen(false);
+      const rawManual = manualPoints[q.id];
+      if (rawManual !== undefined) {
+        // Ha van kézi érték, azt használjuk, de validáljuk a számítás kedvéért
+        // Így a kördiagram és a százalék mindig helyes, még akkor is, ha "999"-et ír a mezőbe
+        let parsed = parseInt(String(rawManual));
+        if (isNaN(parsed)) parsed = 0;
+
+        // Clamp (Korlátozás) a számításhoz
+        if (parsed < 0) parsed = 0;
+        if (parsed > q.points) parsed = q.points;
+
+        finalPoints = parsed;
+      }
+
+      currentScore += finalPoints;
+
+      stats.push({
+        id: q.id,
+        page: q.page_number || 1,
+        isCorrect,
+        type: q.question_type,
+        autoPoints,
+        // A mezőben megjelenő érték (lehet string is szerkesztés közben)
+        displayPoints: rawManual !== undefined ? rawManual : autoPoints,
+        // A validált érték a statisztikához
+        calcPoints: finalPoints,
+        isModified: rawManual !== undefined
+      });
+    });
+
+    return {score: currentScore, maxScore: totalMax, questionStats: stats};
+  }, [questions, answers, manualPoints]);
+
+  // Változtatás kezelése (szerkesztés közben engedékeny)
+  const handleManualPointChange = (qId: string, val: string) => {
+    // Ha üres, engedjük, hogy törölje a nullát
+    if (val === '') {
+      setManualPoints(prev => ({...prev, [qId]: ''}));
+      return;
+    }
+    // Csak számokat engedünk beírni
+    if (/^\d*$/.test(val)) {
+      setManualPoints(prev => ({...prev, [qId]: val}));
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen text-slate-500">Betöltés...</div>;
+  // Blur kezelése (kikattintáskor validál és javít)
+  const handleManualPointBlur = (qId: string, max: number) => {
+    const raw = manualPoints[qId];
+    let val = parseInt(String(raw));
 
-  const totalScore = calculateTotal();
-  const maxScore = getMaxScore();
-  const percentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
-  const isPassed = percentage >= (exam.passing_percentage || 80);
+    // Ha nem szám vagy üres, legyen 0 (vagy min)
+    if (isNaN(val)) val = 0;
+
+    // Korlátozás (Clamp): Nem lehet < 0 és nem lehet > max
+    if (val < 0) val = 0;
+    if (val > max) val = max;
+
+    setManualPoints(prev => ({...prev, [qId]: val}));
+  };
+
+  const handleGrade = async (status: 'passed' | 'failed') => {
+    if (!submission) return;
+    setIsSaving(true);
+    try {
+      const updates: any = {
+        status,
+        grading_notes: gradingNotes,
+        total_score: score, // A useMemo-ban már validált, korlátozott pontszám
+        graded_at: new Date().toISOString(),
+        graded_by: profile?.id,
+        feedback_visible: feedbackVisible,
+        retry_allowed_at: status === 'failed' ? new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() : null
+      };
+
+      const {error} = await supabase.from('exam_submissions').update(updates).eq('id', submission.id);
+      if (error) throw error;
+
+      toast.success(`Vizsga ${status === 'passed' ? 'elfogadva' : 'elutasítva'}!`);
+      navigate('/exams');
+    } catch (err: any) {
+      toast.error("Hiba: " + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const pageNumbers = useMemo(() => {
+    const pages = new Set(questions.map(q => q.page_number || 1));
+    return Array.from(pages).sort((a, b) => a - b);
+  }, [questions]);
+
+  const currentQuestions = useMemo(() => questions.filter(q => (q.page_number || 1) === currentPage), [questions, currentPage]);
+  const totalPages = pageNumbers.length > 0 ? Math.max(...pageNumbers) : 1;
+
+  if (loading) return <div className="flex h-screen items-center justify-center"><Loader2
+    className="w-10 h-10 animate-spin text-yellow-500"/></div>;
+  if (!submission) return <div className="p-10 text-center text-white">Nem található a beadás.</div>;
+
+  const percentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
+  const passingPercent = (submission.exams as any).passing_percentage;
+  const isPassing = percentage >= passingPercent;
+
+  const isGrader = profile?.id !== submission.user_id && user?.id !== submission.user_id;
+  const isPending = submission.status === 'pending';
+  const showDetails = isGrader || feedbackVisible;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-20 animate-in fade-in duration-500">
+    <div className="min-h-screen bg-slate-950 pb-20">
+      {/* --- HEADER --- */}
+      <div className="border-b border-slate-900 bg-slate-950/80 backdrop-blur sticky top-0 z-30">
+        <div className="max-w-[1600px] mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/exams')}
+                    className="text-slate-400 hover:text-white hover:bg-slate-800"><ArrowLeft
+              className="w-4 h-4 mr-2"/> Kilépés</Button>
+            <Separator orientation="vertical" className="h-6 bg-slate-800"/>
+            <h1 className="text-lg font-bold text-white hidden md:block">{(submission.exams as any)?.title}</h1>
+          </div>
 
-      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-        <AlertDialogContent className="bg-slate-900 border-slate-800 text-white">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Értékelés Véglegesítése</AlertDialogTitle>
-            {/* JAVÍTÁS: asChild vagy div használata, hogy ne legyen <p> a <p>-ben */}
-            <div className="text-slate-400 text-sm space-y-4 pt-2">
-              <div className="bg-slate-950 p-3 rounded border border-slate-800">
-                <p>Pontszám: <span className="text-white font-bold">{totalScore} / {maxScore}</span> ({percentage}%)</p>
-                <p>Eredmény: <span
-                  className={`font-bold ${isPassed ? 'text-green-500' : 'text-red-500'}`}>{isPassed ? 'SIKERES' : 'SIKERTELEN'}</span>
-                </p>
-              </div>
-
-              {!isPassed && (
-                <div className="space-y-2 border-t border-slate-800 pt-2">
-                  <Label className="text-white flex items-center gap-2">
-                    <CalendarClock className="w-4 h-4 text-yellow-500"/> Újrapróbálkozás lehetséges ekkor:
-                  </Label>
-                  <Input
-                    type="datetime-local"
-                    className="bg-slate-950 border-slate-700"
-                    value={retryDate}
-                    onChange={e => setRetryDate(e.target.value)}
-                  />
-                  <p className="text-xs text-slate-500">Ha üresen hagyod, azonnal újrapróbálhatja.</p>
-                </div>
-              )}
-
-              <p>Biztosan véglegesíted az eredményt? A diák értesítést kap róla.</p>
-            </div>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              className="bg-slate-800 text-white hover:bg-slate-700 border-slate-700">Mégsem</AlertDialogCancel>
-            <AlertDialogAction onClick={handleSaveGrading}
-                               className={`font-bold text-white ${isPassed ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}>
-              Véglegesítés
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/exams')}>
-          <ArrowLeft className="w-5 h-5"/>
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-white">Vizsga Javítása</h1>
-          <p className="text-slate-400 flex items-center gap-2">
-            {exam.title} <span className="text-slate-600">•</span>
-            <span
-              className="text-slate-200 font-medium">{submission.applicant_name || (submission.profiles ? `${submission.profiles.badge_number} ${submission.profiles.full_name}` : 'Ismeretlen')}</span>
-          </p>
+          <div className="flex items-center gap-3">
+            {submission.status === 'pending' ? <Badge variant="outline"
+                                                      className="text-yellow-500 border-yellow-900/50 bg-yellow-900/10 animate-pulse">Folyamatban</Badge> :
+              <Badge variant="outline"
+                     className={submission.status === 'passed' ? "text-green-500 border-green-900/50" : "text-red-500 border-red-900/50"}>{submission.status === 'passed' ? 'Sikeres' : 'Sikertelen'}</Badge>}
+          </div>
         </div>
       </div>
 
-      {/* INFO SÁV */}
-      <Card
-        className={`bg-slate-900 border-t-4 sticky top-4 z-30 shadow-xl ${isPassed ? 'border-t-green-500 border-slate-800' : 'border-t-red-500 border-slate-800'}`}>
-        <CardContent className="p-4 flex justify-between items-center">
-          <div className="flex gap-6 items-center">
-            <div><p className="text-[10px] text-slate-500 uppercase tracking-wider">Pontszám</p><p
-              className="text-2xl font-mono font-bold text-white">{totalScore} <span
-              className="text-slate-600 text-base">/ {maxScore}</span></p></div>
-            <div className="h-8 w-px bg-slate-800"></div>
-            <div><p className="text-[10px] text-slate-500 uppercase tracking-wider">Százalék</p><p
-              className={`text-2xl font-mono font-bold ${isPassed ? 'text-green-500' : 'text-red-500'}`}>{percentage}%</p>
-            </div>
-            <div className="h-8 w-px bg-slate-800"></div>
-            <div><p className="text-[10px] text-slate-500 uppercase tracking-wider">Minimum</p><p
-              className="text-2xl font-mono font-bold text-slate-400">{exam.passing_percentage}%</p></div>
-          </div>
-          <Button onClick={() => setIsConfirmOpen(true)}
-                  className={`font-bold ${isPassed ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} text-white shadow-lg`}>
-            <Save className="w-4 h-4 mr-2"/> Mentés
-          </Button>
-        </CardContent>
-      </Card>
+      {/* --- MAIN LAYOUT GRID --- */}
+      <div className="max-w-[1600px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start relative">
 
-      {/* KÉRDÉSEK */}
-      <div className="space-y-6">
-        {questions.map((q, index) => {
-          const answer = studentAnswers.find(a => a.question_id === q.id);
-          const score = grades[q.id] || 0;
-          const isFullScore = score === q.points;
-          const hasAnswer = answer && ((answer.answer_text && answer.answer_text.trim() !== "") || (answer.selected_option_ids && answer.selected_option_ids.length > 0));
+        {/* --- BAL OLDAL: KÉRDÉSEK (8 col) --- */}
+        <div className="lg:col-span-8 space-y-6">
+          {showDetails ? (
+            <>
+              <div
+                className="flex items-center justify-between bg-slate-900/80 p-2 rounded-lg border border-slate-800 backdrop-blur-sm sticky top-20 z-20 shadow-lg">
+                <Button variant="ghost" size="sm" disabled={currentPage === 1} onClick={() => {
+                  setCurrentPage(p => p - 1);
+                  window.scrollTo({top: 0, behavior: 'smooth'});
+                }}><ChevronLeft className="w-4 h-4 mr-2"/> Előző</Button>
+                <div className="flex gap-1">{pageNumbers.map(p => (<div key={p} onClick={() => setCurrentPage(p)}
+                                                                        className={`w-2 h-2 rounded-full cursor-pointer transition-all ${currentPage === p ? 'bg-yellow-500 w-6' : 'bg-slate-700 hover:bg-slate-600'}`}/>))}</div>
+                <Button variant="ghost" size="sm" disabled={currentPage === totalPages} onClick={() => {
+                  setCurrentPage(p => p + 1);
+                  window.scrollTo({top: 0, behavior: 'smooth'});
+                }}>Következő <ChevronRight className="w-4 h-4 ml-2"/></Button>
+              </div>
 
-          return (
-            <Card key={q.id}
-                  className={`bg-slate-900 border-slate-800 overflow-hidden ${isFullScore ? 'border-l-4 border-l-green-500' : score > 0 ? 'border-l-4 border-l-yellow-500' : 'border-l-4 border-l-red-500'}`}>
-              <CardHeader className="pb-2 border-b border-slate-800/50 bg-slate-950/30 px-6 pt-4">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <div className="flex gap-2">
-                      <Badge variant="outline" className="bg-slate-950 text-slate-400 border-slate-700">{index + 1}.
-                        Kérdés</Badge>
-                      <Badge className="bg-slate-800 text-slate-300 border-slate-700 flex items-center">
-                        {q.question_type === 'text' ? <Type className="w-3 h-3 mr-1"/> :
-                          <CheckSquare className="w-3 h-3 mr-1"/>}
-                        {q.question_type === 'text' ? 'Szöveges' : 'Választós'}
-                      </Badge>
-                    </div>
-                    <h3 className="text-lg font-medium text-white max-w-3xl">{q.question_text}</h3>
-                  </div>
-                  <div className="flex items-center gap-2 bg-slate-950 p-1.5 rounded-lg border border-slate-700">
-                    <Label className="text-xs text-slate-400 ml-1">Pont:</Label>
-                    <Input type="number"
-                           className={`w-16 h-8 border-slate-600 text-center font-bold ${isFullScore ? 'bg-green-900/20 text-green-500 border-green-500/50' : 'bg-slate-900 text-white'}`}
-                           value={score} onChange={e => {
-                      let val = parseInt(e.target.value) || 0;
-                      if (val > q.points) val = q.points;
-                      if (val < 0) val = 0;
-                      handleScoreChange(q.id, val);
-                    }} max={q.points} min={0}/>
-                    <span className="text-slate-500 text-sm font-mono pr-1">/ {q.points}</span>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                {q.question_type === 'text' && (
-                  <div className="space-y-2">
-                    <Label className="text-slate-400 text-xs uppercase font-bold tracking-wide">Diák Válasza:</Label>
-                    <div
-                      className={`p-4 rounded-lg border text-sm leading-relaxed whitespace-pre-wrap ${hasAnswer ? 'bg-slate-950/50 border-slate-700 text-slate-200' : 'bg-red-950/10 border-red-900/30 text-red-400 italic'}`}>
-                      {answer?.answer_text || "A diák nem adott meg választ."}
-                    </div>
-                  </div>
-                )}
-                {q.question_type !== 'text' && (
-                  <div className="space-y-2">
-                    {q.exam_options.map((opt: any) => {
-                      const isSelected = answer?.selected_option_ids?.includes(opt.id);
-                      const isCorrect = opt.is_correct;
-                      let itemClass = "flex items-center gap-3 p-3 rounded-lg border transition-all ";
-                      if (isSelected && isCorrect) itemClass += "bg-green-900/20 border-green-500/50";
-                      else if (isSelected && !isCorrect) itemClass += "bg-red-900/20 border-red-500/50";
-                      else if (!isSelected && isCorrect) itemClass += "bg-yellow-900/10 border-yellow-500/30 opacity-60";
-                      else itemClass += "bg-slate-950 border-slate-800 opacity-40";
+              <div className="space-y-4">
+                {currentQuestions.map((q, idx) => {
+                  const globalIndex = questions.indexOf(q) + 1;
+                  const answer = answers.find(a => a.question_id === q.id);
+                  const stat = questionStats.find(s => s.id === q.id);
 
-                      return (
-                        <div key={opt.id} className={itemClass}>
-                          {q.question_type === 'single_choice' ? (
+                  let statusColor = "border-slate-800";
+                  if (q.question_type !== 'text') {
+                    if (stat?.autoPoints > 0) statusColor = "border-green-900/30";
+                    else statusColor = "border-red-900/30";
+                  }
+
+                  return (
+                    <Card key={q.id} className={`bg-slate-900 ${statusColor} transition-all duration-300`}>
+                      <CardHeader className="pb-2 border-b border-slate-950 bg-slate-950/20">
+                        <div className="flex justify-between items-start">
+                          <div className="flex gap-3">
                             <div
-                              className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-white bg-white' : 'border-slate-500'}`}>{isSelected &&
-                              <div className="w-2 h-2 rounded-full bg-black"/>}</div>
-                          ) : (
-                            <div
-                              className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isSelected ? 'bg-white text-black' : 'border-slate-500'}`}>{isSelected &&
-                              <CheckSquare className="w-3 h-3"/>}</div>
-                          )}
-                          <span
-                            className={`flex-1 text-sm ${isSelected ? 'text-white font-medium' : 'text-slate-400'}`}>{opt.option_text}</span>
-                          {isCorrect && <Badge
-                            className="bg-green-600 text-white hover:bg-green-600 ml-2 text-[10px]">Helyes</Badge>}
-                          {isSelected && !isCorrect &&
-                            <Badge variant="destructive" className="ml-2 text-[10px]">Rossz válasz</Badge>}
-                          {!isSelected && isCorrect && <Badge variant="outline"
-                                                              className="ml-2 text-[10px] text-yellow-500 border-yellow-500">Hiányzó</Badge>}
+                              className="flex items-center justify-center w-6 h-6 rounded bg-slate-950 border border-slate-800 text-xs font-mono text-slate-400 mt-0.5">{globalIndex}</div>
+                            <CardTitle className="text-base text-slate-200 leading-snug">{q.question_text}</CardTitle>
+                          </div>
+                          <div className="flex items-center gap-3 pl-4">
+                            {/* PONTOZÓ UI - JAVÍTVA */}
+                            {isGrader && isPending ? (
+                              <div
+                                className="flex items-center gap-2 bg-slate-950/50 p-1 rounded border border-slate-800">
+                                {stat?.isModified ? (
+                                  <Badge variant="secondary"
+                                         className="bg-blue-900/20 text-blue-400 text-[10px] h-6"><PenLine
+                                    className="w-3 h-3 mr-1"/> Kézi</Badge>
+                                ) : (
+                                  <Badge variant="secondary"
+                                         className="bg-slate-800 text-slate-500 text-[10px] h-6"><Bot
+                                    className="w-3 h-3 mr-1"/> Auto</Badge>
+                                )}
+                                <div className="flex items-center">
+                                  <Input
+                                    type="text"
+                                    className="w-12 h-6 text-right p-0 pr-1 bg-transparent border-none text-white font-mono focus-visible:ring-0"
+                                    value={stat?.displayPoints} // A displayPoints lehet üres string is
+                                    onChange={(e) => handleManualPointChange(q.id, e.target.value)}
+                                    onBlur={() => handleManualPointBlur(q.id, q.points)}
+                                  />
+                                  <span className="text-slate-500 text-xs">/ {q.points} p</span>
+                                </div>
+                              </div>
+                            ) : (
+                              <Badge variant="secondary"
+                                     className="bg-slate-950 border border-slate-800 text-slate-400 font-mono text-xs h-7">{stat?.calcPoints} / {q.points} pont</Badge>
+                            )}
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {!hasAnswer && q.question_type !== 'text' &&
-                  <div className="mt-4 flex items-center text-red-400 text-xs"><AlertTriangle
-                    className="w-4 h-4 mr-2"/> A diák nem jelölt meg semmit ennél a kérdésnél.</div>}
+                      </CardHeader>
+                      <CardContent className="p-4 pt-4">
+                        {q.question_type === 'text' ? (
+                          <div
+                            className="bg-slate-950 p-4 rounded-md border border-slate-800 text-slate-300 italic min-h-[60px] whitespace-pre-wrap text-sm">
+                            {answer?.answer_text ||
+                              <span className="text-slate-600 opacity-50">Nem érkezett válasz.</span>}
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {q.exam_options.map((opt: any) => {
+                              const isSelected = answer?.selected_option_ids?.includes(opt.id);
+                              const isActuallyCorrect = opt.is_correct;
+
+                              let style = "bg-slate-950 border-slate-800 text-slate-400 opacity-70";
+                              if (isSelected && isActuallyCorrect) style = "bg-green-900/20 border-green-500/50 text-green-400 font-bold opacity-100 shadow-[0_0_10px_rgba(34,197,94,0.1)]";
+                              else if (isSelected && !isActuallyCorrect) style = "bg-red-900/20 border-red-500/50 text-red-400 opacity-100";
+                              else if (!isSelected && isActuallyCorrect) style = "bg-green-900/5 border-green-900/30 text-green-600 border-dashed opacity-100";
+                              else if (isSelected) style = "bg-slate-800 text-white opacity-100";
+
+                              return (
+                                <div key={opt.id}
+                                     className={`p-3 rounded-md border text-sm flex justify-between items-center transition-all ${style}`}>
+                                  <span>{opt.option_text}</span>
+                                  {isSelected && <Badge variant="outline"
+                                                        className="text-[10px] border-current h-5 bg-transparent">Választott</Badge>}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <Card className="bg-slate-900 border-slate-800 py-20"><CardContent className="text-center"><Eye
+              className="w-12 h-12 text-slate-600 mx-auto mb-4"/><h3 className="text-xl font-bold text-white">Részletek
+              elrejtve</h3></CardContent></Card>
+          )}
+
+          {!isGrader && gradingNotes && (
+            <Card className="bg-slate-900 border-slate-800 mt-8"><CardHeader><CardTitle className="text-lg text-white">Oktatói
+              értékelés</CardTitle></CardHeader><CardContent>
+              <div
+                className="bg-slate-950 p-6 rounded-lg border border-slate-800 text-slate-300 italic whitespace-pre-wrap">"{gradingNotes}"
+              </div>
+            </CardContent></Card>)}
+        </div>
+
+        {/* --- JOBB OLDAL: VEZÉRLŐPULT (WRAPPER) --- */}
+        <div className="lg:col-span-4">
+          <div className="space-y-6 lg:sticky lg:top-24 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto pr-1">
+
+            <Card className="bg-slate-900 border-slate-800 shadow-xl overflow-hidden">
+              <div
+                className={`h-2 w-full transition-colors duration-500 ${isPassing ? 'bg-green-500' : 'bg-red-500'}`}/>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex justify-between items-center text-white">
+                  <span>Eredmény</span>
+                  <ScoreRing score={score} max={maxScore} percent={percentage}/>
+                </CardTitle>
+                <CardDescription>Minimum: <span
+                  className="text-white font-bold">{passingPercent}%</span></CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                <div className="space-y-2 pt-2 border-t border-slate-800">
+                  <div className="flex items-center gap-2 text-sm text-slate-400"><User
+                    className="w-4 h-4 text-yellow-500"/> <span
+                    className="text-white font-medium truncate">{submission.applicant_name || "Ismeretlen"}</span></div>
+                  <div className="flex items-center gap-2 text-sm text-slate-400"><Clock
+                    className="w-4 h-4 text-blue-500"/>
+                    <span>{submission.start_time ? formatDistanceToNow(new Date(submission.start_time), {
+                      locale: hu,
+                      addSuffix: true
+                    }) : '-'}</span></div>
+                  {submission.tab_switch_count > 0 && (<div
+                    className="flex items-center gap-2 text-sm text-red-400 bg-red-950/20 p-2 rounded border border-red-900/30 animate-pulse">
+                    <ShieldAlert className="w-4 h-4"/> <span>{submission.tab_switch_count}x fókuszvesztés</span></div>)}
+                </div>
               </CardContent>
             </Card>
-          );
-        })}
+
+            {isGrader && (
+              <Card className="bg-slate-900 border-slate-800 shadow-xl">
+                <CardHeader className="pb-2 pt-4 px-4"><CardTitle
+                  className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><Target
+                  className="w-4 h-4"/> Navigátor</CardTitle></CardHeader>
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-5 gap-2">
+                    {questionStats.map((stat, i) => (
+                      <button
+                        key={stat.id} onClick={() => {
+                        setCurrentPage(stat.page);
+                      }}
+                        className={`h-8 rounded text-xs font-bold transition-all border ${stat.type === 'text' ? 'bg-slate-800 border-slate-700 text-slate-400' : stat.calcPoints > 0 ? 'bg-green-900/20 border-green-900/50 text-green-500' : 'bg-red-900/20 border-red-900/50 text-red-500'} ${stat.page === currentPage ? 'ring-2 ring-yellow-500/50 scale-110' : ''}`}
+                      >{i + 1}</button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {isGrader && isPending && (
+              <Card className="bg-slate-900 border-slate-800 shadow-xl border-l-4 border-l-yellow-600">
+                <CardHeader className="pb-2 pt-4"><CardTitle
+                  className="text-white text-base">Javítás</CardTitle></CardHeader>
+                <CardContent className="space-y-4 p-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-slate-400">Megjegyzés</Label>
+                    <Textarea placeholder="Indoklás..." value={gradingNotes}
+                              onChange={e => setGradingNotes(e.target.value)}
+                              className="bg-slate-950 border-slate-700 text-white min-h-[80px] text-sm resize-none"/>
+                  </div>
+                  <div
+                    className="flex items-center justify-between p-3 bg-slate-950 border border-slate-800 rounded-lg">
+                    <div className="space-y-0.5"><Label className="text-sm text-slate-200">Részletek</Label><p
+                      className="text-[10px] text-slate-500">Láthassa a hibáit?</p></div>
+                    <Switch checked={feedbackVisible} onCheckedChange={setFeedbackVisible}/>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <Button
+                      variant="outline"
+                      className={`h-12 border-red-900/50 text-red-500 hover:bg-red-900/20 hover:text-red-400 transition-all ${!isPassing ? 'ring-2 ring-red-500/50 bg-red-900/10' : 'opacity-60 grayscale'}`}
+                      onClick={() => handleGrade('failed')} disabled={isSaving}
+                    >
+                      {isSaving ? <Loader2 className="w-4 h-4 animate-spin"/> :
+                        <XCircle className="w-5 h-5 mr-2"/>} Megbukott
+                    </Button>
+                    <Button
+                      className={`h-12 border-none font-bold shadow-lg transition-all ${isPassing ? 'bg-green-600 hover:bg-green-700 text-white ring-2 ring-green-400/50 scale-105' : 'bg-slate-800 text-slate-400 opacity-60'}`}
+                      onClick={() => handleGrade('passed')} disabled={isSaving}
+                    >
+                      {isSaving ? <Loader2 className="w-4 h-4 animate-spin"/> :
+                        <CheckCircle2 className="w-5 h-5 mr-2"/>} Átment
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

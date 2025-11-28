@@ -1,77 +1,84 @@
 import {type ClassValue, clsx} from "clsx"
 import {twMerge} from "tailwind-merge"
-import type {Profile, FactionRank, Case} from "@/types/supabase"
+import {type Profile, type FactionRank, type Case, FACTION_RANKS, type Qualification} from "@/types/supabase"
 import type {Exam} from "@/types/exams";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// --- RANG LISTÁK ---
 const EXECUTIVE_STAFF: FactionRank[] = ['Commander', 'Deputy Commander'];
 const COMMAND_STAFF: FactionRank[] = ['Captain III.', 'Captain II.', 'Captain I.', 'Lieutenant II.', 'Lieutenant I.'];
 const SUPERVISORY_STAFF: FactionRank[] = ['Sergeant II.', 'Sergeant I.'];
 
-// --- ALAP JOGOSULTSÁG ELLENŐRZŐK ---
 export const isExecutive = (p?: Profile | null) => p ? EXECUTIVE_STAFF.includes(p.faction_rank) : false;
 export const isCommand = (p?: Profile | null) => p ? COMMAND_STAFF.includes(p.faction_rank) : false;
 export const isSupervisory = (p?: Profile | null) => p ? SUPERVISORY_STAFF.includes(p.faction_rank) : false;
 export const isHighCommand = (p?: Profile | null) => isExecutive(p) || isCommand(p);
 
-// MCB Specifikus
 export const isInvestigatorIII = (p?: Profile | null) => p?.division === 'MCB' && p?.division_rank === 'Investigator III.';
 export const isMcbMember = (p?: Profile | null) => p?.division === 'MCB';
 
 
 // --- VIZSGA JOGOSULTSÁGOK ---
 
-// 1. Ki hozhat létre vizsgát? (Általános gomb)
-export const canCreateAnyExam = (p?: Profile | null) => {
-  if (!p) return false;
-  return p.is_bureau_manager || p.is_bureau_commander || (p.commanded_divisions && p.commanded_divisions.length > 0);
-};
+// Rang segéd: Minél kisebb a szám, annál magasabb a rang (0 = Commander)
+export const getRankPriority = (rank: FactionRank | string | null | undefined): number => {
+  if (!rank) return 999;
+  const index = FACTION_RANKS.indexOf(rank as FactionRank);
+  return index === -1 ? 999 : index;
+}
 
-// 2. Ki SZERKESZTHET/TÖRÖLHET egy KONKRÉT vizsgát?
-export const canManageExam = (p: Profile, exam: Exam) => {
-  // Bureau Manager: Mindenhez hozzáfér
-  if (p.is_bureau_manager) return true;
+// Vizsga TARTALMI szerkesztése (Editor)
+export const canManageExamContent = (user: Profile, exam: Exam) => {
+  if (user.is_bureau_manager) return true;
 
-  // Speciális vizsgák (TGF, Deputy I): CSAK Bureau Manager szerkesztheti!
+  // Trainee és Deputy I vizsgát csak a Bureau Manager szerkesztheti (a kérésed alapján)
   if (exam.type === 'trainee' || exam.type === 'deputy_i') return false;
+  if (exam.required_rank === 'Deputy Sheriff Trainee' || exam.required_rank === 'Deputy Sheriff I.') return false;
 
-  // Osztály specifikus:
-  // Bureau Commander: Csak a saját osztálya
-  if (p.is_bureau_commander && p.division === exam.division) return true;
+  // Egyébként Division Commander vagy Bureau Commander
+  if (user.is_bureau_commander) return true;
+  return !!(exam.division && user.commanded_divisions?.includes(exam.division));
+}
 
-  // Division Commander: Csak a vezetett képesítések
-  if (p.commanded_divisions?.includes(exam.division as any)) return true;
+// Vizsga létrehozása (Új gomb)
+export const canCreateAnyExam = (user: Profile) => {
+  return user.is_bureau_manager || user.is_bureau_commander || (user.commanded_divisions && user.commanded_divisions.length > 0);
+}
 
-  return false;
-};
-
-// 3. Ki ÉRTÉKELHET egy beadott vizsgát?
-export const canGradeExam = (p: Profile, exam: Exam) => {
-  // Aki szerkesztheti, az értékelheti is
-  if (canManageExam(p, exam)) return true;
-
-  // KIVÉTELEK: Trainee és Deputy I vizsgáknál bővebb a javítók köre
-  if (exam.type === 'trainee' || exam.type === 'deputy_i') {
-    // TB tagok
+export const canManageExamAccess = (p: Profile, exam: Exam) => {
+  if (exam.type === 'trainee') {
     if (p.qualifications?.includes('TB')) return true;
-    // Supervisory Staff (Sgt I, Sgt II)
     if (isSupervisory(p)) return true;
-    // Executive / Command Staff
-    if (isHighCommand(p)) return true;
+    if (p.is_bureau_manager) return true;
+    if (p.is_bureau_commander) return true;
+    return false;
   }
 
-  // Divízió specifikusnál a Bureau Commander akkor is javíthat, ha nem ő hozta létre
-  // (Bár a canManageExam ezt már lefedi, de a biztonság kedvéért)
-  if (p.is_bureau_commander && p.division === exam.division) return true;
+  return canManageExamContent(p, exam);
+};
+
+export const canGradeExam = (p: Profile, exam: Exam) => {
+  if (canManageExamAccess(p, exam)) return true;
+
+  if (exam.type === 'trainee') {
+    if (p.qualifications?.includes('TB')) return true;
+  }
 
   return false;
 };
 
-// --- EGYÉB JOGOSULTSÁGOK (MCB, stb.) ---
+export const canManageExam = canManageExamContent;
+
+export const canDeleteExam = (user: Profile, exam: Exam) => {
+  if (user.is_bureau_manager) return true;
+  if (exam.division) {
+    if (user.is_bureau_commander) return true;
+    if (user.commanded_divisions?.includes(exam.division)) return true;
+  }
+  return false;
+}
 
 export const canViewCaseList = (p?: Profile | null) => {
   if (!p) return false;

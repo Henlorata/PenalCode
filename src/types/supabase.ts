@@ -78,7 +78,7 @@ export interface BudgetRequest {
   user_id: string;
   amount: number;
   reason: string;
-  proof_image_path: string;
+  proof_images: string[];
   status: RequestStatus;
   admin_comment?: string | null;
   processed_by?: string | null;
@@ -272,7 +272,6 @@ export interface Database {
         };
         Update: Partial<BudgetRequest>;
       };
-      // --- EZ A RÉSZ HIÁNYZOTT: ---
       system_status: {
         Row: {
           id: string;
@@ -295,7 +294,32 @@ export interface Database {
           updated_by?: string | null;
         };
       };
-      // -----------------------------
+      exam_overrides: {
+        Row: {
+          id: string;
+          exam_id: string;
+          user_id: string;
+          access_type: 'allow' | 'deny';
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          exam_id: string;
+          user_id: string;
+          access_type: 'allow' | 'deny';
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<{
+          id: string;
+          exam_id: string;
+          user_id: string;
+          access_type: 'allow' | 'deny';
+          created_by: string | null;
+          created_at: string;
+        }>;
+      };
       cases: {
         Row: Case;
         Insert: Omit<Case, 'id' | 'case_number' | 'created_at' | 'updated_at' | 'owner'>;
