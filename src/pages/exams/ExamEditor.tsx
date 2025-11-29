@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback, memo} from "react";
+import React, {useState, useEffect, useCallback, memo, useRef} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 import {useAuth} from "@/context/AuthContext";
 import {Button} from "@/components/ui/button";
@@ -235,6 +235,9 @@ export function ExamEditor() {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [submissionCount, setSubmissionCount] = useState(0);
 
+  // FIX: Ref a betöltött examId követésére, hogy ne töltsük újra fókuszváltáskor
+  const loadedExamIdRef = useRef<string | null>(null);
+
   const [examData, setExamData] = useState<Partial<Exam>>({
     title: "",
     description: "",
@@ -259,7 +262,8 @@ export function ExamEditor() {
   }, [profile, examId, navigate]);
 
   useEffect(() => {
-    if (examId && profile) {
+    // Csak akkor töltünk adatot, ha van ID, van profil, és MÉG NEM töltöttük be ezt az ID-t
+    if (examId && profile && loadedExamIdRef.current !== examId) {
       const fetchExam = async () => {
         setIsLoading(true);
         const {
@@ -291,6 +295,9 @@ export function ExamEditor() {
             is_required: q.is_required ?? true,
             page_number: q.page_number ?? 1
           })));
+
+          // SIKERES BETÖLTÉS UTÁN BEÁLLÍTJUK A REF-ET
+          loadedExamIdRef.current = examId;
         }
         setIsLoading(false);
       };
