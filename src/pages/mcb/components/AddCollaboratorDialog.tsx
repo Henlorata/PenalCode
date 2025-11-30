@@ -47,7 +47,13 @@ export function AddCollaboratorDialog({
         return;
       }
       setLoading(true);
-      const {data} = await supabase.from('profiles').select('*').ilike('full_name', `%${search}%`).limit(5);
+      const {data} = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('division', 'MCB')
+        .ilike('full_name', `%${search}%`)
+        .limit(5);
+
       if (data) setResults(data.filter(u => !existingUserIds.includes(u.id)));
       setLoading(false);
     };

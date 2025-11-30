@@ -32,7 +32,7 @@ export function CaseInfoCard({caseData}: { caseData: Case }) {
           <span className="text-slate-500 text-xs uppercase font-mono">Ügyszám</span>
           <span
             className="font-mono text-sky-400 font-bold bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20 group-hover/item:border-sky-400 transition-colors">
-             #{caseData.case_number.toString().padStart(4, '0')}
+            {caseData.case_number}
            </span>
         </div>
         <div className="flex justify-between items-center">

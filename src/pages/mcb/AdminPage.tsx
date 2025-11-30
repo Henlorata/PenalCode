@@ -47,7 +47,12 @@ export function AdminPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const {data, error} = await supabase.from('profiles').select('*').neq('system_role', 'pending');
+      const {data, error} = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('division', 'MCB')
+        .neq('system_role', 'pending');
+
       if (error) throw error;
 
       // SORRENDEZÉS LOGIKA
