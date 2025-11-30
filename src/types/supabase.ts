@@ -120,16 +120,16 @@ export interface Announcement {
 
 export interface Case {
   id: string;
-  case_number: number;
+  case_number: string;
   title: string;
   description: string | null;
-  body: Json; // JSONB tartalom (BlockNote)
+  body: Json;
   status: 'open' | 'closed' | 'archived';
   priority: 'low' | 'medium' | 'high' | 'critical';
   owner_id: string;
   created_at: string;
   updated_at: string;
-  // Joinolt adatok
+  theme?: string;
   owner?: { full_name: string; badge_number: string; };
 }
 

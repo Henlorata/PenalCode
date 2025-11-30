@@ -178,7 +178,9 @@ export const canViewCaseList = (p?: Profile | null) => {
 export const canViewCaseDetails = (p?: Profile | null, caseData?: Case | null, isCollaborator: boolean = false) => {
   if (!p || !caseData) return false;
   if (caseData.owner_id === p.id || isCollaborator) return true;
+  if (p.is_bureau_manager) return true;
   if (isInvestigatorIII(p)) return true;
+  if (p.is_bureau_commander && p.division === 'MCB') return true;
   if (isHighCommand(p) || p.system_role === 'admin') return true;
   if (isSupervisory(p)) return false;
   return false;
